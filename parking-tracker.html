@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>ParkPin</title>
+<link rel="manifest" href="manifest.json">
+<meta name="application-name" content="ParkPin">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --card: #1c1c28;
+    --accent: #f5c518;
+    --accent2: #ff6b35;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+    --saved: #22c55e;
+    --border: #2a2a3a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    padding: 48px 24px 20px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 24px; right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 70%);
+  }
+  .app-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .app-title {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .app-title span { color: var(--accent); }
+
+  /* Status banner */
+  .status-banner {
+    margin: 20px 24px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .status-banner.has-level {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #1c1c10 0%, var(--card) 100%);
+  }
+  .status-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .status-level {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    color: var(--muted);
+    transition: all 0.4s ease;
+  }
+  .status-level.active {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(245,197,24,0.4);
+  }
+  .status-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .status-sub.active { color: var(--saved); }
+  .car-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 48px;
+    opacity: 0.12;
+    transition: opacity 0.4s;
+  }
+  .has-level .car-icon { opacity: 0.5; }
+
+  /* Section title */
+  .section-title {
+    padding: 0 24px;
+    margin-bottom: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Level grid */
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0 24px;
+    margin-bottom: 16px;
+  }
+  .level-btn {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 0;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    color: var(--text);
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .level-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.15s;
+    border-radius: 12px;
+  }
+  .level-btn:active::before { opacity: 0.15; }
+  .level-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    box-shadow: 0 0 30px rgba(245,197,24,0.35);
+    transform: scale(0.96);
+  }
+  .level-btn .sublabel {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    opacity: 0.6;
+  }
+  .level-btn.selected .sublabel { opacity: 0.7; }
+
+  /* Basement levels */
+  .level-grid.basement .level-btn {
+    border-color: #2a2a45;
+    background: #13131f;
+  }
+  .level-grid.basement .level-btn.selected {
+    background: #7c5bf7;
+    border-color: #7c5bf7;
+    color: #fff;
+    box-shadow: 0 0 30px rgba(124,91,247,0.35);
+  }
+  .level-grid.basement .level-btn::before {
+    background: #7c5bf7;
+  }
+
+  /* Time display */
+  .time-row {
+    margin: 8px 24px 16px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+  }
+  .time-info { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .time-value { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); font-weight: 700; }
+
+  /* Clear button */
+  .clear-btn {
+    margin: 0 24px 32px;
+    width: calc(100% - 48px);
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-user-select: none;
+  }
+  .clear-btn:active { background: #2a1a1a; border-color: var(--accent2); color: var(--accent2); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 12px 24px;
+    border-radius: 100px;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Pulse animation */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .level-btn.selected::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 16px;
+    border: 2px solid var(--accent);
+    animation: pulse-ring 1.5s ease-out infinite;
+  }
+  .level-grid.basement .level-btn.selected::after {
+    border-color: #7c5bf7;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="app-label">Parking Tracker</div>
+  <div class="app-title">Park<span>Pin</span></div>
+</div>
+
+<div class="status-banner" id="statusBanner">
+  <div class="status-label">Parked at</div>
+  <div class="status-level" id="statusLevel">—</div>
+  <div class="status-sub" id="statusSub">No level saved yet</div>
+  <div class="car-icon">🚗</div>
+</div>
+
+<div class="time-row" id="timeRow" style="display:none">
+  <div class="time-info">SAVED AT</div>
+  <div class="time-value" id="savedTime">—</div>
+</div>
+
+<div class="section-title">Select Your Level</div>
+<div class="level-grid" id="upperGrid"></div>
+
+<button class="clear-btn" id="clearBtn" onclick="clearParking()">Clear Saved Level</button>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'parkpin_level';
+  const TIME_KEY = 'parkpin_time';
+
+  const upperLevels = ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B', '5A', '5B', '6A', '6B'];
+  const lowerLevels = [];
+
+  let selectedLevel = localStorage.getItem(STORAGE_KEY) || null;
+  let savedTime = localStorage.getItem(TIME_KEY) || null;
+
+  function buildGrid(containerId, levels, prefix) {
+    const grid = document.getElementById(containerId);
+    levels.forEach(lvl => {
+      const btn = document.createElement('button');
+      btn.className = 'level-btn' + (lvl === selectedLevel ? ' selected' : '');
+      btn.id = 'btn-' + lvl;
+      btn.innerHTML = `<span>${lvl}</span><span class="sublabel">LEVEL</span>`;
+      btn.onclick = () => selectLevel(lvl);
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectLevel(lvl) {
+    // Vibrate if supported
+    if (navigator.vibrate) navigator.vibrate(40);
+
+    // Deselect old
+    if (selectedLevel) {
+      const old = document.getElementById('btn-' + selectedLevel);
+      if (old) old.classList.remove('selected');
+    }
+
+    selectedLevel = lvl;
+    savedTime = new Date().toLocaleTimeString('en-SG', {hour: '2-digit', minute:'2-digit'});
+
+    localStorage.setItem(STORAGE_KEY, lvl);
+    localStorage.setItem(TIME_KEY, savedTime);
+
+    // Select new
+    const btn = document.getElementById('btn-' + lvl);
+    if (btn) btn.classList.add('selected');
+
+    updateStatus();
+    showToast('📍 Level ' + lvl + ' saved!');
+  }
+
+  function updateStatus() {
+    const banner = document.getElementById('statusBanner');
+    const levelEl = document.getElementById('statusLevel');
+    const subEl = document.getElementById('statusSub');
+    const timeRow = document.getElementById('timeRow');
+    const timeEl = document.getElementById('savedTime');
+
+    if (selectedLevel) {
+      banner.classList.add('has-level');
+      levelEl.textContent = selectedLevel;
+      levelEl.classList.add('active');
+      subEl.textContent = '✓ Parking level saved';
+      subEl.classList.add('active');
+      timeRow.style.display = 'flex';
+      timeEl.textContent = savedTime || '—';
+    } else {
+      banner.classList.remove('has-level');
+      levelEl.textContent = '—';
+      levelEl.classList.remove('active');
+      subEl.textContent = 'Tap a level below to save';
+      subEl.classList.remove('active');
+      timeRow.style.display = 'none';
+    }
+  }
+
+  function clearParking() {
+    if (!selectedLevel) return;
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+    const old = document.getElementById('btn-' + selectedLevel);
+    if (old) old.classList.remove('selected');
+    selectedLevel = null;
+    savedTime = null;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TIME_KEY);
+    updateStatus();
+    showToast('Cleared ✓');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Build UI
+  buildGrid('upperGrid', upperLevels);
+  updateStatus();
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+</script>
+</body>
+</html>
