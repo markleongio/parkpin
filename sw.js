@@ -1,5 +1,5 @@
-const CACHE = 'parkpin-v1';
-const ASSETS = ['./parking-tracker.html', './manifest.json'];
+const CACHE = 'parkpin-v2';  // Change v1 to v2
+const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -7,7 +7,11 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys().then(keys => 
+      Promise.all(keys.map(key => caches.delete(key)))
+    ).then(() => clients.claim())
+  );
 });
 
 self.addEventListener('fetch', e => {
