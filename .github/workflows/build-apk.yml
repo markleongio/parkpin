@@ -53,7 +53,7 @@ jobs:
             -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: parkpin-release.apk
           path: android/app/build/outputs/apk/release/app-release.apk
