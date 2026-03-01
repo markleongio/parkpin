@@ -5,682 +5,628 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f7f5f2">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111111">
 <title>ParkPin</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    TOKENS
-══════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 :root {
-  --bg:       #f7f5f2;
-  --surface:  #eeebe5;
-  --card:     #ffffff;
-  --gold:     #9a7020;
-  --gold-mid: #c49a38;
-  --gold-lt:  #c9a84c26;
-  --text:     #191714;
-  --sub:      #6b6358;
-  --mute:     #a89e92;
-  --green:    #276640;
-  --red:      #ae3318;
-  --line:     #e2ddd6;
-  --line2:    #cdc7be;
-
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
-
-  --px: 22px;   /* horizontal page padding */
-  --gap: 12px;  /* standard gap */
+  --bg:       #111111;
+  --surface:  #191919;
+  --card:     #1c1c1c;
+  --lime:     #b8f000;
+  --lime-dim: rgba(184,240,0,.18);
+  --white:    #ffffff;
+  --w60:      rgba(255,255,255,.6);
+  --w40:      rgba(255,255,255,.4);
+  --w28:      rgba(255,255,255,.28);
+  --w15:      rgba(255,255,255,.15);
+  --w08:      rgba(255,255,255,.08);
+  --w05:      rgba(255,255,255,.05);
+  --line:     rgba(255,255,255,.1);
+  --red:      rgba(255,70,50,.85);
+  --red-dim:  rgba(255,70,50,.18);
+  --px: 18px;
 }
 
-/* ══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    BASE
-══════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body {
   height:100%; height:100dvh;
-  background:var(--bg); color:var(--text);
-  font-family:'Inter', sans-serif;
-  font-size:14px; font-weight:400;
-  overflow:hidden;
+  background:var(--bg); color:var(--white);
+  font-family:'Space Grotesk', sans-serif;
+  font-size:14px; overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
-body { display:flex; flex-direction:column; position:relative; }
+body { display:flex; flex-direction:column; }
 
-/* ══════════════════════════════════════════════
-   WELCOME SCREEN  (one-time onboarding)
-══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   WELCOME SCREEN
+═══════════════════════════════════════ */
 #screenWelcome {
-  position:fixed; inset:0; z-index:500;
+  position:fixed; inset:0; z-index:600;
   background:var(--bg);
   display:flex; flex-direction:column;
-  padding:max(64px, env(safe-area-inset-top)) var(--px) max(40px, env(safe-area-inset-bottom));
-  transition:opacity .4s ease, transform .4s ease;
+  padding:max(72px, env(safe-area-inset-top)) var(--px) max(40px, env(safe-area-inset-bottom));
+  transition:opacity .4s ease, transform .45s cubic-bezier(.4,0,.2,1);
 }
-#screenWelcome.hidden {
-  opacity:0; transform:translateY(24px); pointer-events:none;
-}
+#screenWelcome.out { opacity:0; transform:translateY(32px); pointer-events:none; }
 
-.wlc-top { flex:1; display:flex; flex-direction:column; justify-content:center; }
+.wlc-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
 
 .wlc-icon {
-  width:56px; height:56px; border-radius:18px;
-  background:var(--text);
-  display:flex; align-items:center; justify-content:center;
-  font-size:26px; margin-bottom:36px;
+  width:54px; height:54px; border-radius:16px;
+  background:var(--lime); display:flex; align-items:center;
+  justify-content:center; font-size:26px; margin-bottom:40px;
 }
 
-.wlc-eyebrow {
-  font-family:'Plus Jakarta Sans', sans-serif;
+.wlc-kicker {
+  font-family:'Space Grotesk', sans-serif;
   font-size:10px; font-weight:700; letter-spacing:3.5px;
-  text-transform:uppercase; color:var(--gold-mid); margin-bottom:10px;
+  text-transform:uppercase; color:var(--lime); margin-bottom:10px;
 }
 .wlc-heading {
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:32px; font-weight:700; line-height:1.15;
-  letter-spacing:-.5px; color:var(--text); margin-bottom:12px;
+  font-family:'Syne', sans-serif;
+  font-size:36px; font-weight:800; line-height:1.1;
+  letter-spacing:-.5px; color:var(--white); margin-bottom:14px;
 }
-.wlc-heading span { color:var(--gold); }
 .wlc-desc {
-  font-size:14px; color:var(--sub); line-height:1.7; font-weight:400;
-  max-width:280px;
+  font-size:14px; color:var(--w60); line-height:1.7; font-weight:400;
+  max-width:290px;
 }
 
-.wlc-form { margin-top:44px; }
+.wlc-field { margin-top:48px; }
 .wlc-label {
-  font-size:10px; font-weight:600; letter-spacing:3px;
-  text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block;
+  font-size:9px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--w40); margin-bottom:9px; display:block;
 }
 .wlc-input {
   width:100%; padding:15px var(--px);
-  background:var(--card); border:1.5px solid var(--line2);
-  border-radius:var(--radius-md); outline:none;
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:17px; font-weight:600; color:var(--text);
-  letter-spacing:-.2px;
+  background:var(--card); border:1.5px solid var(--line);
+  border-radius:16px; outline:none;
+  font-family:'Syne', sans-serif;
+  font-size:20px; font-weight:700; color:var(--white);
   transition:border-color .2s, box-shadow .2s;
+  caret-color:var(--lime);
 }
-.wlc-input::placeholder { color:var(--mute); font-weight:400; font-size:15px; }
-.wlc-input:focus { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
+.wlc-input::placeholder { color:var(--w28); font-size:16px; font-weight:600; font-family:'Space Grotesk',sans-serif; }
+.wlc-input:focus { border-color:rgba(184,240,0,.5); box-shadow:0 0 0 3px rgba(184,240,0,.1); }
 
-.wlc-bottom { flex-shrink:0; }
+.wlc-footer { flex-shrink:0; padding-top:24px; }
 .wlc-btn {
-  width:100%; padding:16px;
-  background:var(--text); border:none; border-radius:var(--radius-md);
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:14px; font-weight:700; color:#fff;
+  width:100%; padding:17px;
+  background:var(--lime); border:none; border-radius:16px;
+  font-family:'Syne', sans-serif;
+  font-size:14px; font-weight:800; color:#0a1200;
   letter-spacing:.5px; cursor:pointer;
-  transition:opacity .2s, transform .2s;
-  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:opacity .18s, transform .18s;
+  box-shadow:0 6px 22px rgba(184,240,0,.22);
 }
-.wlc-btn:active { opacity:.85; transform:scale(.98); }
-.wlc-btn:disabled { background:var(--surface); color:var(--mute); cursor:not-allowed; }
+.wlc-btn:active { opacity:.84; transform:scale(.98); }
+.wlc-btn:disabled { background:var(--card); color:var(--w28); box-shadow:none; cursor:not-allowed; }
 .wlc-skip {
   text-align:center; margin-top:16px;
-  font-size:12px; color:var(--mute); font-weight:500;
-  cursor:pointer; letter-spacing:.3px;
+  font-size:12px; color:var(--w28); font-weight:500; cursor:pointer; letter-spacing:.3px;
 }
-.wlc-skip:active { color:var(--sub); }
+.wlc-skip:active { color:var(--w60); }
 
-/* ══════════════════════════════════════════════
-   HEADER
-══════════════════════════════════════════════ */
-.header {
-  padding:max(52px, env(safe-area-inset-top)) var(--px) 16px;
-  display:flex; align-items:flex-end; justify-content:space-between;
-  flex-shrink:0; border-bottom:1px solid var(--line);
-  background:var(--bg); position:relative; z-index:10;
+/* ═══════════════════════════════════════
+   APP HEADER
+═══════════════════════════════════════ */
+.app-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:max(52px, env(safe-area-inset-top)) var(--px) 14px;
+  flex-shrink:0;
 }
-.header-left {}
-.header-greeting {
-  font-size:10px; font-weight:600; letter-spacing:3px;
-  text-transform:uppercase; color:var(--gold-mid); margin-bottom:3px;
-}
-.header-name {
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:22px; font-weight:700; color:var(--text);
-  letter-spacing:-.4px; line-height:1;
-}
-.header-name em { color:var(--gold); font-style:normal; }
-
-.header-actions { display:flex; gap:8px; align-items:center; }
-.icon-btn {
-  width:38px; height:38px; border-radius:50%;
-  border:1px solid var(--line2); background:rgba(0,0,0,.02);
+.user-row { display:flex; align-items:center; gap:11px; }
+.avatar {
+  width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg,#e8a020,#b87010);
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer; transition:all .18s; color:var(--sub); font-size:15px;
+  font-family:'Syne',sans-serif; font-size:17px; font-weight:800;
+  color:#fff; flex-shrink:0; letter-spacing:-.5px;
 }
-.icon-btn:active { border-color:var(--gold-mid); color:var(--gold); background:var(--gold-lt); }
-.icon-btn.close-btn:active { border-color:var(--red); color:var(--red); background:rgba(174,51,24,.07); }
+.welcome-label {
+  font-size:9px; font-weight:600; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--w40); margin-bottom:2px;
+}
+.user-name-text {
+  font-family:'Syne', sans-serif;
+  font-size:18px; font-weight:800; color:var(--white);
+  letter-spacing:-.3px; line-height:1;
+}
+.gear-btn {
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--line); background:var(--w05);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; color:var(--w40); cursor:pointer;
+  transition:all .18s; flex-shrink:0;
+}
+.gear-btn:active { border-color:var(--lime); color:var(--lime); background:var(--lime-dim); }
 
-/* ══════════════════════════════════════════════
-   SCREEN WRAP  (home ↔ settings slide)
-══════════════════════════════════════════════ */
-.screen-wrap { flex:1; display:flex; overflow:hidden; position:relative; z-index:1; }
+/* ═══════════════════════════════════════
+   SCREEN WRAP (home ↔ settings)
+═══════════════════════════════════════ */
+.screen-wrap { flex:1; display:flex; overflow:hidden; position:relative; min-height:0; }
 .screen {
   min-width:100%; height:100%; display:flex; flex-direction:column;
   transition:transform .32s cubic-bezier(.4,0,.2,1); overflow:hidden;
 }
 #screenHome     { transform:translateX(0); }
 #screenSettings {
-  transform:translateX(100%); position:absolute;
-  top:0; left:0; width:100%; height:100%; background:var(--bg);
+  transform:translateX(100%);
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background:var(--bg);
 }
 body.settings-open #screenHome     { transform:translateX(-28%); pointer-events:none; }
 body.settings-open #screenSettings { transform:translateX(0); }
 
-/* ══════════════════════════════════════════════
-   HOME — EMPTY STATE
-══════════════════════════════════════════════ */
-#stateEmpty  { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-#stateParked { flex:1; display:none; flex-direction:column; min-height:0; }
+/* ═══════════════════════════════════════
+   HOME — PARKED STATE
+═══════════════════════════════════════ */
+#stateParked { flex:1; display:none; flex-direction:column; min-height:0; overflow:hidden; }
 
-.section-label {
-  font-size:10px; font-weight:600; letter-spacing:3px;
-  text-transform:uppercase; color:var(--mute);
-  padding:18px var(--px) 10px; flex-shrink:0;
+/* Hero card */
+.hero-card {
+  margin:0 var(--px); border-radius:26px; overflow:hidden;
+  position:relative; flex-shrink:0;
+  /* 16:9-ish tall card */
+  padding-bottom:54%; height:0;
 }
+.hero-inner {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:18px 20px 20px;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background:linear-gradient(155deg, #141a13 0%, #0b1009 55%, #080d08 100%);
+}
+.hero-bg::before {
+  content:''; position:absolute; inset:0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0, transparent 44px, rgba(255,255,255,.012) 44px, rgba(255,255,255,.012) 45px),
+    repeating-linear-gradient(90deg, transparent 0, transparent 66px, rgba(255,255,255,.008) 66px, rgba(255,255,255,.008) 67px);
+}
+.hero-bg::after {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 15%, rgba(120,210,90,.13) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(80,120,200,.07) 0%, transparent 60%);
+}
+.hero-fade {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.2) 55%, transparent 100%);
+}
+.h-top { display:flex; align-items:flex-start; justify-content:space-between; position:relative; z-index:2; }
+.active-pill {
+  background:var(--lime); color:#0a1200;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  padding:6px 14px; border-radius:30px; line-height:1;
+}
+.level-circle {
+  width:42px; height:42px; border-radius:50%;
+  background:var(--w08); border:1.5px solid var(--w15);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:800; color:var(--white);
+}
+.h-bottom { position:relative; z-index:2; }
+.h-sublabel {
+  font-size:10px; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:var(--w40); margin-bottom:4px;
+}
+.h-level {
+  font-family:'Syne',sans-serif; font-size:52px; font-weight:800;
+  color:var(--white); line-height:1; letter-spacing:-2px; margin-bottom:8px;
+}
+.h-time { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:var(--lime); }
+.h-dot { width:6px; height:6px; border-radius:50%; background:var(--lime); box-shadow:0 0 8px var(--lime); flex-shrink:0; }
 
-/* ── Level grid ── */
-.level-grid-wrap {
-  flex:1; overflow-y:auto; padding:0 14px 12px;
+/* Action cards */
+.actions { display:flex; gap:12px; margin:12px var(--px) 0; flex-shrink:0; }
+.act-card {
+  flex:1; border-radius:22px; padding:18px 16px;
+  border:1px solid var(--w08); background:var(--surface);
+  display:flex; flex-direction:column; gap:6px; cursor:pointer;
+  transition:all .18s;
+}
+.act-card:active { transform:scale(.96); opacity:.85; }
+.act-card.rel { border-color:var(--red-dim); }
+.act-icon { font-size:22px; line-height:1; margin-bottom:2px; }
+.act-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--white); }
+.act-sub { font-size:10px; color:var(--w40); font-weight:500; letter-spacing:.3px; line-height:1.5; }
+
+.home-spacer { flex:1; }
+.home-indicator { flex-shrink:0; display:flex; justify-content:center; padding:10px 0 max(16px, env(safe-area-inset-bottom)); }
+.home-bar { width:130px; height:5px; border-radius:3px; background:var(--w15); }
+
+/* ═══════════════════════════════════════
+   HOME — EMPTY STATE
+═══════════════════════════════════════ */
+#stateEmpty { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+
+.empty-slot {
+  margin:0 var(--px); border-radius:26px;
+  background:#181818; border:1.5px dashed var(--line);
+  flex-shrink:0; position:relative;
+  padding-bottom:54%; height:0;
+}
+.empty-inner {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; text-align:center; padding:24px;
+}
+.empty-emoji { font-size:52px; opacity:.22; }
+.empty-h { font-family:'Syne',sans-serif; font-size:19px; font-weight:800; color:var(--w28); }
+.empty-s { font-size:10px; color:rgba(255,255,255,.18); letter-spacing:2.5px; text-transform:uppercase; font-weight:600; }
+
+/* Level picker */
+.picker-wrap { padding:14px var(--px) 0; flex-shrink:0; }
+.picker-title { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--w28); margin-bottom:11px; }
+.lvl-grid { display:flex; flex-wrap:wrap; gap:9px; }
+.lb {
+  padding:10px 17px; border-radius:14px;
+  border:1.5px solid var(--line); background:var(--w05);
+  font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--w60);
+  cursor:pointer; transition:all .16s cubic-bezier(.34,1.2,.64,1); user-select:none;
+}
+.lb:active { transform:scale(.92); }
+.lb.sel { background:var(--lime); border-color:var(--lime); color:#0a1200; box-shadow:0 4px 16px rgba(184,240,0,.3); transform:scale(1.04); }
+
+/* CTA */
+.cta-wrap { padding:12px var(--px) 0; flex-shrink:0; }
+.cta-btn {
+  width:100%; padding:17px;
+  background:var(--lime); border:none; border-radius:18px;
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:800; color:#0a1200;
+  letter-spacing:.5px; cursor:pointer; transition:opacity .18s, transform .18s;
+  box-shadow:0 6px 22px rgba(184,240,0,.22);
+}
+.cta-btn:active { opacity:.84; transform:scale(.98); }
+.cta-btn:disabled { background:var(--card); color:var(--w28); box-shadow:none; cursor:not-allowed; }
+
+.cta-preview {
+  text-align:center; font-size:10px; font-weight:600;
+  letter-spacing:2px; text-transform:uppercase; color:var(--w40);
+  margin-bottom:9px; min-height:14px;
+}
+.cta-preview span { color:var(--lime); }
+
+/* ═══════════════════════════════════════
+   SETTINGS SCREEN
+═══════════════════════════════════════ */
+.settings-inner { display:flex; flex-direction:column; height:100%; }
+
+.back-header {
+  display:flex; align-items:center; gap:12px;
+  padding:max(52px, env(safe-area-inset-top)) var(--px) 16px;
+  flex-shrink:0; border-bottom:1px solid var(--line);
+}
+.back-circle {
+  width:38px; height:38px; border-radius:50%;
+  background:var(--w05); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; color:var(--w60); cursor:pointer;
+  transition:all .18s; flex-shrink:0;
+}
+.back-circle:active { background:var(--lime-dim); border-color:rgba(184,240,0,.3); color:var(--lime); }
+.settings-page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--white); }
+
+.settings-fields {
+  flex:1; overflow-y:auto; padding:22px var(--px);
+  display:flex; flex-direction:column; gap:24px;
   -webkit-overflow-scrolling:touch;
 }
-.level-grid-wrap::-webkit-scrollbar { display:none; }
+.settings-fields::-webkit-scrollbar { display:none; }
 
-.grid-row { display:flex; gap:9px; margin-bottom:9px; }
-
-.level-tile {
-  flex:1; aspect-ratio:1/1; max-height:86px;
-  background:var(--card); border:1.5px solid var(--line);
-  border-radius:var(--radius-md); display:flex; align-items:center;
-  justify-content:center; cursor:pointer;
-  transition:all .16s cubic-bezier(.34,1.2,.64,1);
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-  position:relative; overflow:hidden; user-select:none;
-}
-.level-tile:active { transform:scale(.91); }
-.level-tile.selected {
-  background:var(--gold); border-color:var(--gold);
-  box-shadow:0 4px 16px rgba(154,112,32,.32);
-  transform:scale(1.04);
-}
-.level-tile.selected .tile-num { color:#fff; }
-.level-tile.selected::after {
-  content:'✓'; position:absolute; top:5px; right:7px;
-  font-size:9px; font-weight:700; color:rgba(255,255,255,.7);
-  font-family:'Inter',sans-serif;
-}
-.tile-num {
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:clamp(18px, 5.5vw, 26px);
-  font-weight:700; line-height:1; color:var(--text); letter-spacing:-.2px;
-}
-.tile-spacer { flex:1; visibility:hidden; pointer-events:none; aspect-ratio:1/1; max-height:86px; }
-
-/* No presets empty */
-.no-presets {
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; text-align:center; padding:32px; gap:10px;
-}
-.no-presets-icon { font-size:36px; opacity:.35; }
-.no-presets-title {
-  font-family:'Plus Jakarta Sans',sans-serif; font-size:18px;
-  font-weight:600; color:var(--sub);
-}
-.no-presets-sub { font-size:11px; color:var(--mute); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
-.no-presets-btn {
-  margin-top:6px; padding:12px 24px;
-  background:transparent; border:1.5px solid var(--gold-mid);
-  border-radius:var(--radius-sm);
-  font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700;
-  color:var(--gold); letter-spacing:1.5px; text-transform:uppercase; cursor:pointer;
-  transition:all .18s;
-}
-.no-presets-btn:active { background:var(--gold-lt); transform:scale(.97); }
-
-/* ── Park bar ── */
-.park-bar {
-  padding:12px 14px max(16px, env(safe-area-inset-bottom));
-  border-top:1px solid var(--line); background:var(--bg); flex-shrink:0;
-}
-.selected-preview {
-  text-align:center; font-size:11px; color:var(--mute);
-  letter-spacing:2px; text-transform:uppercase; font-weight:500;
-  margin-bottom:10px; min-height:15px;
-}
-.selected-preview span { color:var(--gold); font-weight:700; }
-.park-btn {
-  width:100%; padding:16px;
-  background:var(--text); border:none; border-radius:var(--radius-md);
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:13px; font-weight:700; color:#fff;
-  letter-spacing:.8px; text-transform:uppercase; cursor:pointer;
-  transition:all .18s;
-  display:flex; align-items:center; justify-content:center; gap:9px;
-  box-shadow:0 4px 16px rgba(25,23,20,.18);
-}
-.park-btn:not(:disabled):active { opacity:.82; transform:scale(.98); }
-.park-btn:disabled { background:var(--surface); color:var(--mute); box-shadow:none; cursor:not-allowed; }
-.park-btn-dot { width:5px; height:5px; border-radius:50%; background:#fff; opacity:.7; }
-.park-btn:not(:disabled) .park-btn-dot { animation:blink 2s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.6)} }
-
-/* ══════════════════════════════════════════════
-   HOME — PARKED STATE
-══════════════════════════════════════════════ */
-.parked-hero {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  padding:28px var(--px) 0; text-align:center;
-}
-
-.level-card {
-  width:100%; background:var(--card);
-  border:1.5px solid var(--gold-mid);
-  border-radius:var(--radius-xl);
-  padding:36px 20px 28px; position:relative; overflow:hidden;
-  margin-bottom:18px;
-  animation:card-pulse 3.5s ease-in-out infinite;
-}
-@keyframes card-pulse {
-  0%,100%{box-shadow:0 4px 28px rgba(154,112,32,.08)}
-  50%    {box-shadow:0 8px 40px rgba(154,112,32,.18)}
-}
-.level-card::before {
-  content:''; position:absolute; top:0; left:20px; right:20px; height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold-mid),transparent); opacity:.5;
-}
-.level-card-label {
-  font-size:9px; font-weight:700; letter-spacing:4px;
-  text-transform:uppercase; color:var(--mute); margin-bottom:14px;
-}
-.level-number {
-  font-family:'Plus Jakarta Sans', sans-serif;
-  font-size:clamp(68px, 20vw, 96px); font-weight:700; line-height:1;
-  color:var(--gold); letter-spacing:-3px;
-  transition:all .4s cubic-bezier(.34,1.2,.64,1);
-}
-.level-saved-time {
-  font-size:11px; font-weight:600; letter-spacing:2px; color:var(--green);
-  margin-top:14px; display:flex; align-items:center;
-  justify-content:center; gap:6px;
-}
-.level-saved-time::before {
-  content:''; width:5px; height:5px; border-radius:50%;
-  background:var(--green); flex-shrink:0;
-}
-
-.parked-sub {
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:13px; font-weight:500; color:var(--mute);
-  letter-spacing:.2px; margin-bottom:22px;
-}
-
-.parked-actions {
-  width:100%; padding:0 var(--px) max(20px, env(safe-area-inset-bottom));
-  flex-shrink:0;
-}
-.release-btn {
-  width:100%; padding:16px;
-  background:transparent; border:1.5px solid rgba(174,51,24,.3);
-  border-radius:var(--radius-md);
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:13px; font-weight:700; color:var(--red);
-  letter-spacing:.8px; text-transform:uppercase;
-  cursor:pointer; transition:all .18s;
-  display:flex; align-items:center; justify-content:center;
-}
-.release-btn:active { background:rgba(174,51,24,.05); transform:scale(.98); }
-.release-hint {
-  font-size:10px; color:var(--mute); text-align:center;
-  letter-spacing:2px; text-transform:uppercase; margin-top:9px; font-weight:500;
-}
-
-/* ══════════════════════════════════════════════
-   SETTINGS SCREEN
-══════════════════════════════════════════════ */
-.settings-header {
-  padding:20px var(--px) 16px;
-  border-bottom:1px solid var(--line); flex-shrink:0;
-}
-.settings-title-row {
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:3px;
-}
-.settings-title {
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:22px; font-weight:700; color:var(--text); letter-spacing:-.3px;
-}
-.settings-sub { font-size:11px; color:var(--mute); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
-
-.settings-body { flex:1; overflow-y:auto; padding:20px var(--px); -webkit-overflow-scrolling:touch; }
-.settings-body::-webkit-scrollbar { display:none; }
-
-/* Name field in settings */
-.settings-name-field { margin-bottom:24px; }
-.field-label {
+.f-label {
   font-size:9px; font-weight:700; letter-spacing:3px;
-  text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block;
+  text-transform:uppercase; color:var(--w40); margin-bottom:9px; display:block;
 }
-.field-input {
+.f-input {
   width:100%; padding:14px 16px;
-  background:var(--card); border:1.5px solid var(--line2);
-  border-radius:var(--radius-md); outline:none;
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:16px; font-weight:600; color:var(--text); letter-spacing:-.2px;
+  background:var(--card); border:1.5px solid var(--line);
+  border-radius:16px; outline:none;
+  font-family:'Syne',sans-serif; font-size:18px; font-weight:700;
+  color:var(--white); caret-color:var(--lime);
   transition:border-color .2s, box-shadow .2s;
 }
-.field-input::placeholder { color:var(--mute); font-weight:400; font-size:14px; }
-.field-input:focus { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
+.f-input::placeholder { color:var(--w28); font-weight:600; font-size:15px; }
+.f-input:focus { border-color:rgba(184,240,0,.4); box-shadow:0 0 0 3px rgba(184,240,0,.08); }
 
-/* Info banner */
-.settings-info {
-  background:var(--gold-lt); border:1px solid rgba(196,154,56,.25);
-  border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:20px;
-  font-size:12px; color:var(--sub); line-height:1.65;
+/* Tags box */
+.tags-box {
+  background:var(--card); border:1.5px solid var(--line);
+  border-radius:16px; padding:12px; display:flex; flex-wrap:wrap;
+  gap:8px; align-items:center; cursor:text; min-height:52px;
+  transition:border-color .2s;
 }
-.settings-info strong { color:var(--gold); font-weight:700; }
-
-/* Tag field */
-.tag-field-label { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block; }
-.tag-field {
-  background:var(--card); border:1.5px solid var(--line2);
-  border-radius:var(--radius-md); padding:10px 12px;
-  display:flex; flex-wrap:wrap; gap:7px; align-items:center;
-  cursor:text; transition:border-color .2s; min-height:52px;
+.tags-box:focus-within { border-color:rgba(184,240,0,.4); box-shadow:0 0 0 3px rgba(184,240,0,.08); }
+.tag-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--w08); border-radius:9px; padding:7px 11px;
+  font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--white);
+  animation:tag-pop .18s cubic-bezier(.34,1.4,.64,1);
 }
-.tag-field:focus-within { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
-
-.tag {
-  display:inline-flex; align-items:center; gap:5px;
-  background:var(--surface); border:1px solid var(--line2);
-  border-radius:8px; padding:5px 9px;
-  font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700;
-  color:var(--text); line-height:1; user-select:none;
-  animation:tag-in .18s cubic-bezier(.34,1.4,.64,1);
-}
-@keyframes tag-in { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
-.tag-remove {
-  width:15px; height:15px; border-radius:50%; background:var(--line2);
+@keyframes tag-pop { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
+.tag-x {
+  font-size:9px; color:var(--w40); cursor:pointer; font-weight:800;
+  width:14px; height:14px; border-radius:50%; background:var(--w15);
   display:flex; align-items:center; justify-content:center;
-  font-size:8px; color:var(--sub); cursor:pointer; font-weight:800;
-  transition:all .14s; flex-shrink:0; font-family:'Inter',sans-serif;
+  transition:all .14s; flex-shrink:0;
 }
-.tag-remove:active { background:var(--red); color:#fff; }
-
+.tag-x:active { background:var(--red); color:#fff; }
 .tag-input {
   border:none; outline:none; background:transparent;
-  font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:600;
-  color:var(--text); min-width:60px; flex:1;
-  text-transform:uppercase; letter-spacing:.5px; caret-color:var(--gold);
+  font-family:'Syne',sans-serif; font-size:17px; font-weight:700;
+  color:var(--white); min-width:70px; flex:1;
+  text-transform:uppercase; caret-color:var(--lime);
 }
-.tag-input::placeholder { color:var(--mute); font-size:13px; font-weight:400; letter-spacing:0; text-transform:none; }
-.tag-hint { font-size:10px; color:var(--mute); letter-spacing:1px; margin-top:7px; font-weight:500; }
+.tag-input::placeholder { color:var(--w28); font-size:13px; font-weight:500; text-transform:none; font-family:'Space Grotesk',sans-serif; }
+.f-hint { font-size:10px; color:var(--w28); margin-top:6px; letter-spacing:1px; font-weight:500; }
 
-.quick-add-label { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--mute); margin:18px 0 9px; display:block; }
-.quick-chips { display:flex; flex-wrap:wrap; gap:7px; }
-.quick-chip {
+/* Quick chips */
+.quick-row { display:flex; flex-wrap:wrap; gap:7px; }
+.qc {
   padding:7px 13px; border-radius:10px;
-  border:1px solid var(--line); background:var(--card);
-  font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700;
-  color:var(--sub); cursor:pointer; transition:all .15s;
+  border:1px solid var(--line); background:var(--w05);
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--w40);
+  cursor:pointer; transition:all .15s;
 }
-.quick-chip:active { border-color:var(--gold-mid); background:var(--gold-lt); color:var(--gold); transform:scale(.95); }
-.quick-chip.used { opacity:.28; pointer-events:none; }
+.qc:active { border-color:rgba(184,240,0,.4); background:var(--lime-dim); color:var(--lime); transform:scale(.95); }
+.qc.used { opacity:.25; pointer-events:none; }
 
-.order-tip {
-  margin-top:18px; padding:11px 14px;
-  background:var(--surface); border-radius:var(--radius-sm);
-  font-size:11px; color:var(--sub); line-height:1.65;
+.settings-cta {
+  padding:12px var(--px) max(24px, env(safe-area-inset-bottom));
+  border-top:1px solid var(--line); flex-shrink:0;
 }
-.order-tip strong { color:var(--text); font-weight:600; }
+.settings-save-btn {
+  width:100%; padding:17px;
+  background:var(--lime); border:none; border-radius:18px;
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:800; color:#0a1200;
+  letter-spacing:.5px; cursor:pointer; transition:opacity .18s, transform .18s;
+  box-shadow:0 6px 22px rgba(184,240,0,.2);
+}
+.settings-save-btn:active { opacity:.84; transform:scale(.98); }
 
-.settings-footer {
-  padding:12px var(--px) max(20px, env(safe-area-inset-bottom));
-  border-top:1px solid var(--line); background:var(--bg); flex-shrink:0;
-}
-.save-btn {
-  width:100%; padding:16px;
-  background:var(--text); border:none; border-radius:var(--radius-md);
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:13px; font-weight:700; color:#fff;
-  letter-spacing:.8px; text-transform:uppercase; cursor:pointer;
-  transition:all .18s; box-shadow:0 4px 16px rgba(25,23,20,.16);
-}
-.save-btn:active { opacity:.82; transform:scale(.98); }
-
-/* ══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    OVERLAYS
-══════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 .overlay {
   position:fixed; inset:0;
-  background:rgba(25,23,20,.45);
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
   display:flex; align-items:center; justify-content:center; padding:28px;
-  opacity:0; pointer-events:none; transition:opacity .22s; z-index:200;
+  opacity:0; pointer-events:none; transition:opacity .22s; z-index:300;
 }
 .overlay.open { opacity:1; pointer-events:all; }
 .confirm-box {
-  background:var(--card); border-radius:var(--radius-xl);
+  background:#1e1e1e; border-radius:26px;
   padding:36px 24px 28px; width:100%; max-width:320px;
   text-align:center; border:1px solid var(--line);
-  box-shadow:0 20px 60px rgba(0,0,0,.14);
+  box-shadow:0 24px 64px rgba(0,0,0,.5);
   transform:translateY(20px) scale(.96);
   transition:transform .28s cubic-bezier(.34,1.2,.64,1);
 }
 .overlay.open .confirm-box { transform:translateY(0) scale(1); }
 .confirm-icon { font-size:44px; margin-bottom:14px; line-height:1; }
 .confirm-title {
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:22px; font-weight:700; letter-spacing:-.3px;
-  margin-bottom:7px; color:var(--text);
+  font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+  letter-spacing:-.3px; margin-bottom:8px; color:var(--white);
 }
-.confirm-sub { font-size:13px; color:var(--sub); margin-bottom:24px; line-height:1.75; }
+.confirm-sub { font-size:13px; color:var(--w60); margin-bottom:24px; line-height:1.75; }
 .confirm-btns { display:flex; gap:9px; }
 .btn-c {
-  flex:1; padding:15px; border-radius:var(--radius-sm);
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:13px; font-weight:700; cursor:pointer;
-  transition:all .18s; border:1.5px solid;
+  flex:1; padding:15px; border-radius:14px;
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:800;
+  cursor:pointer; transition:all .18s; border:1.5px solid;
   letter-spacing:.5px; text-transform:uppercase;
 }
 .btn-c:active { transform:scale(.97); }
 .btn-c.yes { background:var(--red); border-color:var(--red); color:#fff; }
-.btn-c.no  { background:transparent; border-color:var(--line2); color:var(--sub); }
-#overlayClose .btn-c.yes { background:var(--text); border-color:var(--text); }
+.btn-c.no  { background:transparent; border-color:var(--line); color:var(--w60); }
+#overlayClose .btn-c.yes { background:var(--lime); border-color:var(--lime); color:#0a1200; }
 
-/* ══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    TOAST
-══════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 .toast {
-  position:fixed; bottom:24px; left:20px; right:20px;
-  background:var(--text); border-radius:var(--radius-md);
-  padding:14px 18px; font-size:11px; color:#fff;
+  position:fixed; bottom:24px; left:18px; right:18px;
+  background:#2a2a2a; border:1px solid var(--line); border-radius:14px;
+  padding:13px 18px; font-size:11px; color:var(--white);
   text-align:center; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;
-  opacity:0; transform:translateY(16px);
-  transition:all .28s cubic-bezier(.34,1.2,.64,1); pointer-events:none; z-index:400;
+  opacity:0; transform:translateY(14px);
+  transition:all .28s cubic-bezier(.34,1.2,.64,1); pointer-events:none; z-index:500;
 }
 .toast.show { opacity:1; transform:translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
+<!-- ═══════════════════════════════════════
      WELCOME SCREEN
-══════════════════════════════════════════════ -->
+═══════════════════════════════════════ -->
 <div id="screenWelcome">
-  <div class="wlc-top">
+  <div class="wlc-body">
     <div class="wlc-icon">🅿</div>
-    <div class="wlc-eyebrow">Welcome to</div>
-    <div class="wlc-heading">Park<span>Pin</span></div>
-    <div class="wlc-desc">Never forget where you parked again. Tell us your name to get started.</div>
+    <div class="wlc-kicker">Welcome to</div>
+    <div class="wlc-heading">ParkPin</div>
+    <div class="wlc-desc">Never forget where you parked again. What should we call you?</div>
 
-    <div class="wlc-form">
-      <label class="wlc-label" for="wlcNameInput">Your Name</label>
-      <input
-        id="wlcNameInput"
-        class="wlc-input"
-        type="text"
+    <div class="wlc-field">
+      <label class="wlc-label" for="wlcInput">Your Name</label>
+      <input id="wlcInput" class="wlc-input" type="text"
         placeholder="e.g. Alex"
-        autocomplete="given-name"
-        autocorrect="off"
-        spellcheck="false"
-        maxlength="30"
-        oninput="onWelcomeInput()"
-      />
+        autocomplete="given-name" autocorrect="off" spellcheck="false" maxlength="30"
+        oninput="onWlcInput()" />
     </div>
   </div>
 
-  <div class="wlc-bottom">
-    <button id="wlcBtn" class="wlc-btn" onclick="completeWelcome()" disabled>
-      Get Started →
-    </button>
+  <div class="wlc-footer">
+    <button id="wlcBtn" class="wlc-btn" onclick="completeWelcome()" disabled>Get Started →</button>
     <div class="wlc-skip" onclick="skipWelcome()">Skip for now</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
-     MAIN APP
-══════════════════════════════════════════════ -->
-
-<!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <div class="header-greeting" id="headerGreeting">Parking</div>
-    <div class="header-name" id="headerName">Park<em>Pin</em></div>
+<!-- ═══════════════════════════════════════
+     APP HEADER
+═══════════════════════════════════════ -->
+<div class="app-header">
+  <div class="user-row">
+    <div class="avatar" id="headerAvatar">🅿</div>
+    <div>
+      <div class="welcome-label" id="headerLabel">Parking</div>
+      <div class="user-name-text" id="headerName">ParkPin</div>
+    </div>
   </div>
-  <div class="header-actions">
-    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
-    <button class="icon-btn close-btn" onclick="openOverlay('close')" title="Close app">✕</button>
-  </div>
+  <div class="gear-btn" onclick="openSettings()">⚙</div>
 </div>
 
-<!-- SCREENS -->
+<!-- ═══════════════════════════════════════
+     SCREENS
+═══════════════════════════════════════ -->
 <div class="screen-wrap">
 
   <!-- HOME -->
   <div class="screen" id="screenHome">
 
-    <!-- Empty: pick level -->
-    <div id="stateEmpty">
-      <div class="section-label">Tap your parking level</div>
-      <div class="level-grid-wrap" id="levelGrid"></div>
-      <div class="park-bar">
-        <div class="selected-preview" id="selectedPreview">No level selected</div>
-        <button id="parkBtn" class="park-btn" onclick="parkCar()" disabled>
-          <span class="park-btn-dot"></span>
-          Save This Spot
-        </button>
+    <!-- PARKED -->
+    <div id="stateParked">
+      <div class="hero-card">
+        <div class="hero-bg"></div>
+        <div class="hero-fade"></div>
+        <div class="hero-inner">
+          <div class="h-top">
+            <div class="active-pill">● Active</div>
+            <div class="level-circle" id="heroCircle">—</div>
+          </div>
+          <div class="h-bottom">
+            <div class="h-sublabel">Your Location</div>
+            <div class="h-level" id="heroLevel">—</div>
+            <div class="h-time"><div class="h-dot"></div><span id="heroTime"></span></div>
+          </div>
+        </div>
       </div>
+
+      <div class="actions">
+        <div class="act-card rel" onclick="openOverlay('release')">
+          <div class="act-icon">🔓</div>
+          <div class="act-title">Release</div>
+          <div class="act-sub">Clear saved<br>parking spot</div>
+        </div>
+        <div class="act-card" onclick="openOverlay('close')">
+          <div class="act-icon">🚪</div>
+          <div class="act-title">Exit App</div>
+          <div class="act-sub">Close the app<br>completely</div>
+        </div>
+      </div>
+
+      <div class="home-spacer"></div>
+      <div class="home-indicator"><div class="home-bar"></div></div>
     </div>
 
-    <!-- Parked -->
-    <div id="stateParked">
-      <div class="parked-hero">
-        <div class="level-card">
-          <div class="level-card-label">Your Spot</div>
-          <div class="level-number" id="levelNumber">—</div>
-          <div class="level-saved-time" id="savedTime"></div>
+    <!-- EMPTY -->
+    <div id="stateEmpty">
+      <div class="empty-slot">
+        <div class="empty-inner">
+          <div class="empty-emoji">🚗</div>
+          <div class="empty-h">Not parked yet</div>
+          <div class="empty-s">Select your level below</div>
         </div>
-        <div class="parked-sub">Safe &amp; Remembered</div>
       </div>
-      <div class="parked-actions">
-        <button class="release-btn" onclick="openOverlay('release')">Release Spot</button>
-        <div class="release-hint">Tap to clear when you've left</div>
+
+      <div class="picker-wrap">
+        <div class="picker-title">Tap your parking level</div>
+        <div class="lvl-grid" id="levelGrid"></div>
       </div>
+
+      <div class="cta-wrap">
+        <div class="cta-preview" id="ctaPreview">No level selected</div>
+        <button class="cta-btn" id="ctaBtn" onclick="parkCar()" disabled>📍 Save This Spot</button>
+      </div>
+
+      <div class="home-spacer"></div>
+      <div class="home-indicator"><div class="home-bar"></div></div>
     </div>
 
   </div><!-- /screenHome -->
 
   <!-- SETTINGS -->
   <div class="screen" id="screenSettings">
+    <div class="settings-inner">
 
-    <div class="settings-header">
-      <div class="settings-title-row">
-        <div class="settings-title">Settings</div>
-        <button class="icon-btn" onclick="closeSettings()">✕</button>
-      </div>
-      <div class="settings-sub">Customise your experience</div>
-    </div>
-
-    <div class="settings-body">
-
-      <!-- Name -->
-      <div class="settings-name-field">
-        <label class="field-label" for="settingsNameInput">Your Name</label>
-        <input
-          id="settingsNameInput"
-          class="field-input"
-          type="text"
-          placeholder="Enter your name"
-          autocomplete="given-name"
-          autocorrect="off"
-          spellcheck="false"
-          maxlength="30"
-        />
+      <div class="back-header">
+        <div class="back-circle" onclick="closeSettings()">←</div>
+        <div class="settings-page-title">Settings</div>
       </div>
 
-      <div class="settings-info">
-        <strong>How it works:</strong> Type a level (e.g. <strong>1A</strong>, <strong>B2</strong>, <strong>G</strong>) and press <strong>Space</strong> or <strong>Enter</strong> to add it. Tap <strong>✕</strong> on a tag to remove it.
+      <div class="settings-fields">
+
+        <div>
+          <label class="f-label" for="settingsName">Your Name</label>
+          <input id="settingsName" class="f-input" type="text"
+            placeholder="Enter your name"
+            autocomplete="given-name" autocorrect="off" spellcheck="false" maxlength="30" />
+        </div>
+
+        <div>
+          <label class="f-label">My Carpark Levels</label>
+          <div class="tags-box" id="tagsBox" onclick="focusTagInput()">
+            <input type="text" id="tagInput" class="tag-input"
+              placeholder="Type a level…" maxlength="6"
+              autocomplete="off" autocorrect="off"
+              autocapitalize="characters" spellcheck="false" />
+          </div>
+          <div class="f-hint">Press Space or Enter after each level to add it</div>
+        </div>
+
+        <div>
+          <label class="f-label">Quick Add</label>
+          <div class="quick-row" id="quickRow">
+            <div class="qc" onclick="quickAdd('B3')">B3</div>
+            <div class="qc" onclick="quickAdd('B2')">B2</div>
+            <div class="qc" onclick="quickAdd('B1')">B1</div>
+            <div class="qc" onclick="quickAdd('G')">G</div>
+            <div class="qc" onclick="quickAdd('1')">1</div>
+            <div class="qc" onclick="quickAdd('2')">2</div>
+            <div class="qc" onclick="quickAdd('3')">3</div>
+            <div class="qc" onclick="quickAdd('4')">4</div>
+            <div class="qc" onclick="quickAdd('5')">5</div>
+            <div class="qc" onclick="quickAdd('1A')">1A</div>
+            <div class="qc" onclick="quickAdd('1B')">1B</div>
+            <div class="qc" onclick="quickAdd('2A')">2A</div>
+            <div class="qc" onclick="quickAdd('2B')">2B</div>
+            <div class="qc" onclick="quickAdd('3A')">3A</div>
+            <div class="qc" onclick="quickAdd('3B')">3B</div>
+          </div>
+        </div>
+
       </div>
 
-      <label class="tag-field-label">Parking Levels</label>
-      <div class="tag-field" id="tagField" onclick="focusTagInput()">
-        <input
-          type="text" id="tagInput" class="tag-input"
-          placeholder="Type a level…" maxlength="6"
-          autocomplete="off" autocorrect="off"
-          autocapitalize="characters" spellcheck="false"
-        />
-      </div>
-      <div class="tag-hint">Press Space or Enter after each level</div>
-
-      <span class="quick-add-label">Quick Add</span>
-      <div class="quick-chips" id="quickChips">
-        <div class="quick-chip" onclick="quickAdd('B3')">B3</div>
-        <div class="quick-chip" onclick="quickAdd('B2')">B2</div>
-        <div class="quick-chip" onclick="quickAdd('B1')">B1</div>
-        <div class="quick-chip" onclick="quickAdd('G')">G</div>
-        <div class="quick-chip" onclick="quickAdd('1')">1</div>
-        <div class="quick-chip" onclick="quickAdd('2')">2</div>
-        <div class="quick-chip" onclick="quickAdd('3')">3</div>
-        <div class="quick-chip" onclick="quickAdd('4')">4</div>
-        <div class="quick-chip" onclick="quickAdd('5')">5</div>
-        <div class="quick-chip" onclick="quickAdd('1A')">1A</div>
-        <div class="quick-chip" onclick="quickAdd('1B')">1B</div>
-        <div class="quick-chip" onclick="quickAdd('2A')">2A</div>
-        <div class="quick-chip" onclick="quickAdd('2B')">2B</div>
-        <div class="quick-chip" onclick="quickAdd('3A')">3A</div>
-        <div class="quick-chip" onclick="quickAdd('3B')">3B</div>
-      </div>
-
-      <div class="order-tip">
-        <strong>Tip:</strong> Levels appear on the home screen in the order you add them.
+      <div class="settings-cta">
+        <button class="settings-save-btn" onclick="saveSettings()">Save Changes</button>
       </div>
 
     </div>
-
-    <div class="settings-footer">
-      <button class="save-btn" onclick="saveSettings()">Save Changes</button>
-    </div>
-
   </div><!-- /screenSettings -->
 
 </div><!-- /screen-wrap -->
 
-<!-- OVERLAY: Close -->
+<!-- OVERLAY: Close / Exit -->
 <div class="overlay" id="overlayClose">
   <div class="confirm-box">
-    <div class="confirm-icon">👋</div>
-    <div class="confirm-title">Close App?</div>
+    <div class="confirm-icon">🚪</div>
+    <div class="confirm-title">Exit App?</div>
     <div class="confirm-sub">Your saved spot stays intact.<br>The app will close completely.</div>
     <div class="confirm-btns">
-      <button class="btn-c yes" onclick="doClose()">Close</button>
+      <button class="btn-c yes" onclick="doClose()">Exit</button>
       <button class="btn-c no"  onclick="closeOverlay('close')">Stay</button>
     </div>
   </div>
@@ -689,7 +635,7 @@ body.settings-open #screenSettings { transform:translateX(0); }
 <!-- OVERLAY: Release -->
 <div class="overlay" id="overlayRelease">
   <div class="confirm-box">
-    <div class="confirm-icon">🚗</div>
+    <div class="confirm-icon">🔓</div>
     <div class="confirm-title">Release Spot?</div>
     <div class="confirm-sub">This will clear your saved parking level. Drive safe.</div>
     <div class="confirm-btns">
@@ -703,184 +649,154 @@ body.settings-open #screenSettings { transform:translateX(0); }
 
 <script>
 /* ── Keys ── */
-const LEVEL_KEY   = 'parkpin_level';
-const TIME_KEY    = 'parkpin_time';
-const PRESETS_KEY = 'parkpin_presets';
-const NAME_KEY    = 'parkpin_name';
-const ONBOARD_KEY = 'parkpin_onboarded';
+const K_LEVEL    = 'parkpin_level';
+const K_TIME     = 'parkpin_time';
+const K_PRESETS  = 'parkpin_presets';
+const K_NAME     = 'parkpin_name';
+const K_ONBOARD  = 'parkpin_onboarded';
+const DEFAULTS   = ['B3','B2','B1','G','1','2','3','4','5'];
 
-const DEFAULT_PRESETS = ['B3','B2','B1','G','1','2','3','4','5'];
+let selLevel  = null;
+let draftTags = [];
 
-let selectedLevel = null;
-let draftTags     = [];
-
-/* ══════════════════ BOOT ══════════════════ */
+/* ════════ BOOT ════════ */
 function init() {
-  const onboarded = localStorage.getItem(ONBOARD_KEY);
-  if (!onboarded) {
-    // First launch — show welcome screen
-    document.getElementById('screenWelcome').classList.remove('hidden');
+  if (!localStorage.getItem(K_ONBOARD)) {
+    document.getElementById('screenWelcome').style.display = 'flex';
   } else {
-    document.getElementById('screenWelcome').classList.add('hidden');
     document.getElementById('screenWelcome').style.display = 'none';
   }
-  updateHeader();
-  renderGrid();
-  const saved = localStorage.getItem(LEVEL_KEY);
-  const time  = localStorage.getItem(TIME_KEY);
+  refreshHeader();
+  const saved = localStorage.getItem(K_LEVEL);
+  const time  = localStorage.getItem(K_TIME);
   if (saved) showParked(saved, time); else showEmpty();
 }
 
-/* ══════════════════ WELCOME ══════════════════ */
-function onWelcomeInput() {
-  const val = document.getElementById('wlcNameInput').value.trim();
-  document.getElementById('wlcBtn').disabled = !val;
+/* ════════ WELCOME ════════ */
+function onWlcInput() {
+  document.getElementById('wlcBtn').disabled = !document.getElementById('wlcInput').value.trim();
 }
-
 function completeWelcome() {
-  const name = document.getElementById('wlcNameInput').value.trim();
+  const name = document.getElementById('wlcInput').value.trim();
   if (!name) return;
-  localStorage.setItem(NAME_KEY, name);
-  localStorage.setItem(ONBOARD_KEY, '1');
+  localStorage.setItem(K_NAME, name);
+  localStorage.setItem(K_ONBOARD, '1');
   dismissWelcome();
 }
-
 function skipWelcome() {
-  localStorage.setItem(ONBOARD_KEY, '1');
+  localStorage.setItem(K_ONBOARD, '1');
   dismissWelcome();
 }
-
 function dismissWelcome() {
   const el = document.getElementById('screenWelcome');
-  el.classList.add('hidden');
-  updateHeader();
-  setTimeout(() => { el.style.display = 'none'; }, 420);
+  el.classList.add('out');
+  refreshHeader();
+  setTimeout(() => el.style.display = 'none', 460);
 }
 
-/* ══════════════════ HEADER ══════════════════ */
-function updateHeader() {
-  const name = localStorage.getItem(NAME_KEY);
-  const greeting = document.getElementById('headerGreeting');
+/* ════════ HEADER ════════ */
+function refreshHeader() {
+  const name    = localStorage.getItem(K_NAME) || '';
+  const avatarEl = document.getElementById('headerAvatar');
+  const labelEl  = document.getElementById('headerLabel');
   const nameEl   = document.getElementById('headerName');
+
   if (name) {
-    const hour = new Date().getHours();
-    const tod  = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    greeting.textContent = tod;
-    nameEl.innerHTML     = name;
-    nameEl.style.fontStyle = 'normal';
+    const h   = new Date().getHours();
+    const tod = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    avatarEl.textContent = name.charAt(0).toUpperCase();
+    avatarEl.style.fontSize = '18px';
+    labelEl.textContent  = tod;
+    nameEl.textContent   = name;
   } else {
-    greeting.textContent = 'Parking';
-    nameEl.innerHTML     = 'Park<em>Pin</em>';
+    avatarEl.textContent = '🅿';
+    avatarEl.style.fontSize = '22px';
+    labelEl.textContent  = 'Parking';
+    nameEl.textContent   = 'ParkPin';
   }
 }
 
-/* ══════════════════ GRID ══════════════════ */
+/* ════════ PRESETS ════════ */
 function getPresets() {
   try {
-    const raw = localStorage.getItem(PRESETS_KEY);
+    const raw = localStorage.getItem(K_PRESETS);
     const arr = raw ? JSON.parse(raw) : null;
-    return Array.isArray(arr) && arr.length ? arr : DEFAULT_PRESETS;
-  } catch(e) { return DEFAULT_PRESETS; }
+    return Array.isArray(arr) && arr.length ? arr : DEFAULTS;
+  } catch(e) { return DEFAULTS; }
 }
 
 function renderGrid() {
   const presets = getPresets();
   const grid    = document.getElementById('levelGrid');
-  if (!presets.length) {
-    grid.innerHTML = `<div class="no-presets">
-      <div class="no-presets-icon">🅿</div>
-      <div class="no-presets-title">No levels set up yet</div>
-      <div class="no-presets-sub">Add levels in settings</div>
-      <button class="no-presets-btn" onclick="openSettings()">Open Settings</button>
-    </div>`;
-    return;
-  }
-  const COLS = 3;
-  let html = '';
-  for (let i = 0; i < presets.length; i += COLS) {
-    const row = presets.slice(i, i + COLS);
-    html += '<div class="grid-row">';
-    row.forEach(lvl => {
-      html += `<div class="level-tile" id="tile-${CSS.escape(lvl)}" onclick="selectLevel('${lvl.replace(/'/g,"\\'")}')">
-        <div class="tile-num">${lvl}</div>
-      </div>`;
-    });
-    for (let s = row.length; s < COLS; s++) html += '<div class="tile-spacer"></div>';
-    html += '</div>';
-  }
-  grid.innerHTML = html;
-  if (selectedLevel && presets.includes(selectedLevel)) {
-    const t = document.getElementById('tile-' + CSS.escape(selectedLevel));
-    if (t) t.classList.add('selected');
-  } else {
-    selectedLevel = null;
-    document.getElementById('parkBtn').disabled = true;
-    updatePreview();
-  }
+  grid.innerHTML = presets.map(lvl =>
+    `<div class="lb${selLevel === lvl ? ' sel' : ''}" id="lb-${CSS.escape(lvl)}"
+       onclick="selectLevel('${lvl.replace(/'/g,"\\'")}')">
+      ${lvl}
+    </div>`
+  ).join('');
 }
 
-/* ══════════════════ HOME ══════════════════ */
+/* ════════ HOME ════════ */
 function showEmpty() {
-  document.getElementById('stateEmpty').style.display  = 'flex';
   document.getElementById('stateParked').style.display = 'none';
-  selectedLevel = null;
+  document.getElementById('stateEmpty').style.display  = 'flex';
+  selLevel = null;
   renderGrid();
-  updatePreview();
-  document.getElementById('parkBtn').disabled = true;
+  updateCtaPreview();
+  document.getElementById('ctaBtn').disabled = true;
 }
 
 function showParked(level, time) {
   document.getElementById('stateEmpty').style.display  = 'none';
   document.getElementById('stateParked').style.display = 'flex';
-  document.getElementById('levelNumber').textContent   = level;
-  document.getElementById('savedTime').textContent     = time ? 'Saved at ' + time : '';
+  document.getElementById('heroLevel').textContent  = 'Level ' + level;
+  document.getElementById('heroCircle').textContent = level;
+  document.getElementById('heroTime').textContent   = time ? 'Saved at ' + time : '';
 }
 
 function selectLevel(lvl) {
   if (navigator.vibrate) navigator.vibrate(18);
-  selectedLevel = lvl;
-  document.querySelectorAll('.level-tile').forEach(t => t.classList.remove('selected'));
-  const tile = document.getElementById('tile-' + CSS.escape(lvl));
-  if (tile) tile.classList.add('selected');
-  document.getElementById('parkBtn').disabled = false;
-  updatePreview();
+  selLevel = lvl;
+  document.querySelectorAll('.lb').forEach(el => el.classList.remove('sel'));
+  const el = document.getElementById('lb-' + CSS.escape(lvl));
+  if (el) el.classList.add('sel');
+  document.getElementById('ctaBtn').disabled = false;
+  updateCtaPreview();
 }
 
-function updatePreview() {
-  const el = document.getElementById('selectedPreview');
-  el.innerHTML = selectedLevel
-    ? 'Level <span>' + selectedLevel + '</span> selected'
+function updateCtaPreview() {
+  const el = document.getElementById('ctaPreview');
+  el.innerHTML = selLevel
+    ? 'Level <span>' + selLevel + '</span> selected'
     : 'No level selected';
 }
 
 function parkCar() {
-  if (!selectedLevel) return;
+  if (!selLevel) return;
   if (navigator.vibrate) navigator.vibrate(35);
   const now = new Date().toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit' });
-  localStorage.setItem(LEVEL_KEY, selectedLevel);
-  localStorage.setItem(TIME_KEY, now);
-  showToast('Level ' + selectedLevel + ' saved ✓');
-  const lvl = selectedLevel;
+  localStorage.setItem(K_LEVEL, selLevel);
+  localStorage.setItem(K_TIME, now);
+  showToast('Level ' + selLevel + ' saved ✓');
+  const lvl = selLevel;
   setTimeout(() => showParked(lvl, now), 300);
 }
 
 function releaseSpot() {
   closeOverlay('release');
   if (navigator.vibrate) navigator.vibrate([20,40,20]);
-  localStorage.removeItem(LEVEL_KEY);
-  localStorage.removeItem(TIME_KEY);
+  localStorage.removeItem(K_LEVEL);
+  localStorage.removeItem(K_TIME);
   showToast('Spot released — drive safe');
-  setTimeout(() => showEmpty(), 360);
+  setTimeout(() => showEmpty(), 350);
 }
 
-/* ══════════════════ SETTINGS ══════════════════ */
+/* ════════ SETTINGS ════════ */
 function openSettings() {
   draftTags = [...getPresets()];
-  renderTagField();
+  renderTags();
   updateQuickChips();
-  // Pre-fill name
-  const name = localStorage.getItem(NAME_KEY) || '';
-  document.getElementById('settingsNameInput').value = name;
+  document.getElementById('settingsName').value = localStorage.getItem(K_NAME) || '';
   document.body.classList.add('settings-open');
 }
 
@@ -888,25 +804,25 @@ function closeSettings() {
   document.body.classList.remove('settings-open');
 }
 
-function renderTagField() {
-  const field = document.getElementById('tagField');
-  field.querySelectorAll('.tag').forEach(t => t.remove());
+function renderTags() {
+  const box   = document.getElementById('tagsBox');
   const input = document.getElementById('tagInput');
-  draftTags.forEach(lvl => field.insertBefore(makeTagEl(lvl), input));
+  box.querySelectorAll('.tag-pill').forEach(t => t.remove());
+  draftTags.forEach(lvl => box.insertBefore(makeTag(lvl), input));
   input.value = '';
 }
 
-function makeTagEl(lvl) {
-  const tag = document.createElement('div');
-  tag.className = 'tag'; tag.dataset.val = lvl;
-  tag.innerHTML = `${lvl}<span class="tag-remove" onclick="removeTag('${lvl.replace(/'/g,"\\'")}')">✕</span>`;
-  return tag;
+function makeTag(lvl) {
+  const d = document.createElement('div');
+  d.className = 'tag-pill'; d.dataset.val = lvl;
+  d.innerHTML = `${lvl}<span class="tag-x" onclick="removeTag('${lvl.replace(/'/g,"\\'")}')">✕</span>`;
+  return d;
 }
 
 function removeTag(lvl) {
   if (navigator.vibrate) navigator.vibrate(12);
   draftTags = draftTags.filter(t => t !== lvl);
-  renderTagField(); updateQuickChips();
+  renderTags(); updateQuickChips();
 }
 
 function addTag(raw) {
@@ -916,33 +832,32 @@ function addTag(raw) {
   if (draftTags.length >= 18) { showToast('Max 18 levels'); return; }
   if (navigator.vibrate) navigator.vibrate(15);
   draftTags.push(val);
-  renderTagField(); updateQuickChips();
+  renderTags(); updateQuickChips();
 }
 
 function focusTagInput() { document.getElementById('tagInput').focus(); }
 
 function updateQuickChips() {
-  document.querySelectorAll('.quick-chip').forEach(chip => {
-    chip.classList.toggle('used', draftTags.includes(chip.textContent.trim()));
+  document.querySelectorAll('.qc').forEach(c => {
+    c.classList.toggle('used', draftTags.includes(c.textContent.trim()));
   });
 }
 
 function quickAdd(val) { if (!draftTags.includes(val)) addTag(val); }
 
 document.getElementById('tagInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+  if (['Enter',' ',','].includes(e.key)) {
     e.preventDefault();
     if (this.value.trim()) addTag(this.value.trim());
     this.value = '';
-  } else if (e.key === 'Backspace' && this.value === '' && draftTags.length) {
+  } else if (e.key === 'Backspace' && !this.value && draftTags.length) {
     removeTag(draftTags[draftTags.length - 1]);
   }
 });
-
 document.getElementById('tagInput').addEventListener('input', function() {
   if (this.value.endsWith(' ') || this.value.endsWith(',')) {
-    const clean = this.value.slice(0,-1).trim();
-    if (clean) addTag(clean);
+    const c = this.value.slice(0,-1).trim();
+    if (c) addTag(c);
     this.value = '';
   }
 });
@@ -950,36 +865,49 @@ document.getElementById('tagInput').addEventListener('input', function() {
 function saveSettings() {
   const pending = document.getElementById('tagInput').value.trim();
   if (pending) addTag(pending);
-
-  // Save name
-  const name = document.getElementById('settingsNameInput').value.trim();
-  if (name) localStorage.setItem(NAME_KEY, name);
-  else localStorage.removeItem(NAME_KEY);
-
   if (!draftTags.length) { showToast('Add at least one level'); return; }
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(draftTags));
+
+  const name = document.getElementById('settingsName').value.trim();
+  if (name) localStorage.setItem(K_NAME, name);
+  else localStorage.removeItem(K_NAME);
+
+  localStorage.setItem(K_PRESETS, JSON.stringify(draftTags));
   if (navigator.vibrate) navigator.vibrate([15,30,15]);
-  updateHeader();
+  refreshHeader();
   closeSettings();
-  renderGrid();
+  if (document.getElementById('stateEmpty').style.display !== 'none') renderGrid();
   showToast('Settings saved ✓');
 }
 
-/* ══════════════════ CLOSE APP ══════════════════ */
+/* ════════ EXIT APP — the fix ════════ */
 function doClose() {
   closeOverlay('close');
-  try {
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-      window.Capacitor.Plugins.App.exitApp();
-    } else if (navigator.app && navigator.app.exitApp) {
-      navigator.app.exitApp();
-    } else { window.close(); }
-  } catch(e) { window.close(); }
+  /* Small delay so overlay closes cleanly before exit */
+  setTimeout(() => {
+    try {
+      /* Capacitor v3+ */
+      if (window.Capacitor) {
+        // import dynamically to avoid errors if plugin not loaded yet
+        const { App } = Capacitor.Plugins;
+        if (App && typeof App.exitApp === 'function') {
+          App.exitApp(); return;
+        }
+      }
+      /* Cordova */
+      if (navigator.app && typeof navigator.app.exitApp === 'function') {
+        navigator.app.exitApp(); return;
+      }
+      /* Fallback */
+      window.close();
+    } catch(err) {
+      window.close();
+    }
+  }, 120);
 }
 
-/* ══════════════════ UTILS ══════════════════ */
-function openOverlay(n)  { document.getElementById('overlay'+n[0].toUpperCase()+n.slice(1)).classList.add('open'); }
-function closeOverlay(n) { document.getElementById('overlay'+n[0].toUpperCase()+n.slice(1)).classList.remove('open'); }
+/* ════════ UTILS ════════ */
+function openOverlay(n)  { document.getElementById('overlay' + n[0].toUpperCase() + n.slice(1)).classList.add('open'); }
+function closeOverlay(n) { document.getElementById('overlay' + n[0].toUpperCase() + n.slice(1)).classList.remove('open'); }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
