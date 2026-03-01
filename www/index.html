@@ -6,378 +6,570 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f5f3ef">
+<meta name="theme-color" content="#f7f5f2">
 <title>ParkPin</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#f5f3ef; --surface:#edeae4; --card:#ffffff;
-    --gold:#a07828; --gold-dim:#c9a84c; --gold-pale:#c9a84c22;
-    --text:#1a1a1a; --muted:#7a7060; --muted2:#b0a898;
-    --green:#2e7a4a; --red:#b83a1e; --border:#ddd8cf; --border2:#c8c0b4;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { height:100%; height:100dvh; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-weight:400; overflow:hidden; }
-  body { display:flex; flex-direction:column; }
+/* ══════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════ */
+:root {
+  --bg:       #f7f5f2;
+  --surface:  #eeebe5;
+  --card:     #ffffff;
+  --gold:     #9a7020;
+  --gold-mid: #c49a38;
+  --gold-lt:  #c9a84c26;
+  --text:     #191714;
+  --sub:      #6b6358;
+  --mute:     #a89e92;
+  --green:    #276640;
+  --red:      #ae3318;
+  --line:     #e2ddd6;
+  --line2:    #cdc7be;
 
-  body::before {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background:
-      radial-gradient(ellipse 60% 40% at 85% 5%, rgba(201,168,76,.07) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 10% 95%, rgba(180,160,120,.05) 0%, transparent 60%);
-  }
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
 
-  /* ─────────────────────────────── HEADER ── */
-  .header {
-    padding:max(52px, env(safe-area-inset-top)) 24px 18px;
-    display:flex; align-items:flex-end; justify-content:space-between;
-    flex-shrink:0; border-bottom:1px solid var(--border); background:var(--bg);
-    position:relative; z-index:1;
-  }
-  .brand-label { font-size:9px; font-weight:600; letter-spacing:4px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:3px; }
-  .brand-title { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:400; letter-spacing:1px; color:var(--text); line-height:1; }
-  .brand-title em { color:var(--gold); font-style:italic; }
+  --px: 22px;   /* horizontal page padding */
+  --gap: 12px;  /* standard gap */
+}
 
-  .header-actions { display:flex; gap:10px; align-items:center; }
-  .icon-btn {
-    width:40px; height:40px; border-radius:50%; border:1px solid var(--border2);
-    background:rgba(0,0,0,.03); display:flex; align-items:center; justify-content:center;
-    cursor:pointer; transition:all .2s; color:var(--muted); font-size:16px; flex-shrink:0;
-  }
-  .icon-btn:active { border-color:var(--gold-dim); color:var(--gold); background:var(--gold-pale); }
-  .icon-btn.close-btn:active { border-color:var(--red); color:var(--red); background:rgba(184,58,30,.07); }
+/* ══════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+  height:100%; height:100dvh;
+  background:var(--bg); color:var(--text);
+  font-family:'Inter', sans-serif;
+  font-size:14px; font-weight:400;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body { display:flex; flex-direction:column; position:relative; }
 
-  /* ─────────────────────────────── SCREENS ── */
-  /* All screens sit in a sliding container */
-  .screen-wrap {
-    flex:1; display:flex; overflow:hidden; position:relative; z-index:1;
-  }
-  .screen {
-    min-width:100%; height:100%; display:flex; flex-direction:column;
-    transition:transform .35s cubic-bezier(.4,0,.2,1);
-    overflow:hidden;
-  }
-  /* Default: home visible, settings off to the right */
-  #screenHome     { transform:translateX(0%); }
-  #screenSettings { transform:translateX(100%); position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); }
+/* ══════════════════════════════════════════════
+   WELCOME SCREEN  (one-time onboarding)
+══════════════════════════════════════════════ */
+#screenWelcome {
+  position:fixed; inset:0; z-index:500;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  padding:max(64px, env(safe-area-inset-top)) var(--px) max(40px, env(safe-area-inset-bottom));
+  transition:opacity .4s ease, transform .4s ease;
+}
+#screenWelcome.hidden {
+  opacity:0; transform:translateY(24px); pointer-events:none;
+}
 
-  body.settings-open #screenHome     { transform:translateX(-30%); pointer-events:none; }
-  body.settings-open #screenSettings { transform:translateX(0%); }
+.wlc-top { flex:1; display:flex; flex-direction:column; justify-content:center; }
 
-  /* ─────────────────────────────── HOME ── */
-  #screenHome { overflow:hidden; }
+.wlc-icon {
+  width:56px; height:56px; border-radius:18px;
+  background:var(--text);
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; margin-bottom:36px;
+}
 
-  /* States */
-  #stateEmpty  { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-  #stateParked { flex:1; display:none; flex-direction:column; min-height:0; }
+.wlc-eyebrow {
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:10px; font-weight:700; letter-spacing:3.5px;
+  text-transform:uppercase; color:var(--gold-mid); margin-bottom:10px;
+}
+.wlc-heading {
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:32px; font-weight:700; line-height:1.15;
+  letter-spacing:-.5px; color:var(--text); margin-bottom:12px;
+}
+.wlc-heading span { color:var(--gold); }
+.wlc-desc {
+  font-size:14px; color:var(--sub); line-height:1.7; font-weight:400;
+  max-width:280px;
+}
 
-  .section-label {
-    font-size:9px; font-weight:600; letter-spacing:4px; color:var(--muted2);
-    text-transform:uppercase; padding:16px 24px 8px; flex-shrink:0;
-  }
+.wlc-form { margin-top:44px; }
+.wlc-label {
+  font-size:10px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block;
+}
+.wlc-input {
+  width:100%; padding:15px var(--px);
+  background:var(--card); border:1.5px solid var(--line2);
+  border-radius:var(--radius-md); outline:none;
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:17px; font-weight:600; color:var(--text);
+  letter-spacing:-.2px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.wlc-input::placeholder { color:var(--mute); font-weight:400; font-size:15px; }
+.wlc-input:focus { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
 
-  /* ── LEVEL GRID ── */
-  .level-grid-wrap {
-    flex:1; overflow-y:auto; padding:0 16px 12px;
-    -webkit-overflow-scrolling:touch;
-  }
-  .level-grid-wrap::-webkit-scrollbar { display:none; }
+.wlc-bottom { flex-shrink:0; }
+.wlc-btn {
+  width:100%; padding:16px;
+  background:var(--text); border:none; border-radius:var(--radius-md);
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:14px; font-weight:700; color:#fff;
+  letter-spacing:.5px; cursor:pointer;
+  transition:opacity .2s, transform .2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.wlc-btn:active { opacity:.85; transform:scale(.98); }
+.wlc-btn:disabled { background:var(--surface); color:var(--mute); cursor:not-allowed; }
+.wlc-skip {
+  text-align:center; margin-top:16px;
+  font-size:12px; color:var(--mute); font-weight:500;
+  cursor:pointer; letter-spacing:.3px;
+}
+.wlc-skip:active { color:var(--sub); }
 
-  .grid-row { display:flex; gap:10px; margin-bottom:10px; }
+/* ══════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════ */
+.header {
+  padding:max(52px, env(safe-area-inset-top)) var(--px) 16px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  flex-shrink:0; border-bottom:1px solid var(--line);
+  background:var(--bg); position:relative; z-index:10;
+}
+.header-left {}
+.header-greeting {
+  font-size:10px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:var(--gold-mid); margin-bottom:3px;
+}
+.header-name {
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:22px; font-weight:700; color:var(--text);
+  letter-spacing:-.4px; line-height:1;
+}
+.header-name em { color:var(--gold); font-style:normal; }
 
-  .level-tile {
-    flex:1; aspect-ratio:1/1; max-height:90px;
-    background:var(--card); border:1.5px solid var(--border);
-    border-radius:16px; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; cursor:pointer;
-    transition:all .18s cubic-bezier(.34,1.2,.64,1);
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
-    position:relative; overflow:hidden; user-select:none;
-  }
-  .level-tile:active { transform:scale(.92); }
-  .level-tile.selected {
-    background:var(--gold); border-color:var(--gold);
-    box-shadow:0 4px 20px rgba(160,120,40,.35);
-    transform:scale(1.05);
-  }
-  .level-tile.selected .tile-num { color:#fff; }
-  .level-tile.selected::after {
-    content:'✓'; position:absolute; top:5px; right:8px;
-    font-size:10px; color:rgba(255,255,255,.75); font-weight:700;
-  }
-  .tile-num {
-    font-family:'Cormorant Garamond',serif;
-    font-size:clamp(22px, 6.5vw, 34px);
-    font-weight:400; line-height:1; color:var(--text);
-  }
-  .tile-spacer { flex:1; visibility:hidden; pointer-events:none; aspect-ratio:1/1; max-height:90px; }
+.header-actions { display:flex; gap:8px; align-items:center; }
+.icon-btn {
+  width:38px; height:38px; border-radius:50%;
+  border:1px solid var(--line2); background:rgba(0,0,0,.02);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .18s; color:var(--sub); font-size:15px;
+}
+.icon-btn:active { border-color:var(--gold-mid); color:var(--gold); background:var(--gold-lt); }
+.icon-btn.close-btn:active { border-color:var(--red); color:var(--red); background:rgba(174,51,24,.07); }
 
-  /* Empty state when no presets */
-  .no-presets {
-    flex:1; display:flex; flex-direction:column; align-items:center;
-    justify-content:center; text-align:center; padding:24px; gap:12px;
-  }
-  .no-presets-icon { font-size:40px; opacity:.4; }
-  .no-presets-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-style:italic; color:var(--muted); }
-  .no-presets-sub { font-size:11px; color:var(--muted2); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
-  .no-presets-btn {
-    margin-top:8px; padding:13px 28px; background:transparent;
-    border:1.5px solid var(--gold-dim); border-radius:12px;
-    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
-    color:var(--gold); letter-spacing:1.5px; text-transform:uppercase; cursor:pointer;
-    transition:all .2s;
-  }
-  .no-presets-btn:active { background:var(--gold-pale); transform:scale(.97); }
+/* ══════════════════════════════════════════════
+   SCREEN WRAP  (home ↔ settings slide)
+══════════════════════════════════════════════ */
+.screen-wrap { flex:1; display:flex; overflow:hidden; position:relative; z-index:1; }
+.screen {
+  min-width:100%; height:100%; display:flex; flex-direction:column;
+  transition:transform .32s cubic-bezier(.4,0,.2,1); overflow:hidden;
+}
+#screenHome     { transform:translateX(0); }
+#screenSettings {
+  transform:translateX(100%); position:absolute;
+  top:0; left:0; width:100%; height:100%; background:var(--bg);
+}
+body.settings-open #screenHome     { transform:translateX(-28%); pointer-events:none; }
+body.settings-open #screenSettings { transform:translateX(0); }
 
-  /* ── PARK BUTTON BAR ── */
-  .park-bar {
-    padding:12px 16px max(16px, env(safe-area-inset-bottom));
-    border-top:1px solid var(--border); background:var(--bg); flex-shrink:0;
-  }
-  .selected-preview {
-    text-align:center; font-size:11px; color:var(--muted);
-    letter-spacing:2px; text-transform:uppercase; font-weight:500;
-    margin-bottom:10px; min-height:16px;
-  }
-  .selected-preview span { color:var(--gold); font-weight:700; }
-  .park-btn {
-    width:100%; padding:17px; background:var(--gold); border:none; border-radius:16px;
-    font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; color:#fff;
-    letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    box-shadow:0 4px 18px rgba(160,120,40,.28);
-  }
-  .park-btn:not(:disabled):active { opacity:.86; transform:scale(.98); }
-  .park-btn:disabled { background:var(--surface); color:var(--muted2); box-shadow:none; cursor:not-allowed; }
-  .park-btn-dot { width:6px; height:6px; border-radius:50%; background:#fff; opacity:.8; }
-  .park-btn:not(:disabled) .park-btn-dot { animation:pulse-dot 2s ease-in-out infinite; }
-  @keyframes pulse-dot { 0%,100%{opacity:.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.6)} }
+/* ══════════════════════════════════════════════
+   HOME — EMPTY STATE
+══════════════════════════════════════════════ */
+#stateEmpty  { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+#stateParked { flex:1; display:none; flex-direction:column; min-height:0; }
 
-  /* ── PARKED STATE ── */
-  .parked-hero {
-    flex:1; display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    text-align:center; padding:24px 24px 0;
-  }
-  .level-card {
-    width:100%; background:var(--card); border:1.5px solid var(--gold-dim);
-    border-radius:28px; padding:40px 20px 32px; position:relative;
-    overflow:hidden; margin-bottom:20px;
-    animation:card-glow 3s ease-in-out infinite;
-  }
-  @keyframes card-glow {
-    0%,100%{box-shadow:0 4px 32px rgba(160,120,40,.10)}
-    50%{box-shadow:0 8px 48px rgba(160,120,40,.22)}
-  }
-  .level-card::before {
-    content:''; position:absolute; top:0; left:24px; right:24px; height:1px;
-    background:linear-gradient(90deg,transparent,var(--gold-dim),transparent); opacity:.6;
-  }
-  .level-card-label { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:16px; }
-  .level-number {
-    font-family:'Cormorant Garamond',serif;
-    font-size:clamp(80px,22vw,120px); font-weight:400; line-height:1;
-    color:var(--gold); letter-spacing:-1px;
-    transition:all .4s cubic-bezier(.34,1.2,.64,1);
-  }
-  .level-saved-time {
-    font-size:11px; letter-spacing:2px; color:var(--green);
-    margin-top:16px; display:flex; align-items:center;
-    justify-content:center; gap:6px; font-weight:600;
-  }
-  .level-saved-time::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); flex-shrink:0; }
-  .parked-tagline { font-family:'Cormorant Garamond',serif; font-size:16px; font-style:italic; color:var(--muted); letter-spacing:.5px; margin-bottom:24px; }
+.section-label {
+  font-size:10px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:var(--mute);
+  padding:18px var(--px) 10px; flex-shrink:0;
+}
 
-  .parked-actions { width:100%; padding:0 24px max(20px, env(safe-area-inset-bottom)); flex-shrink:0; }
-  .release-btn {
-    width:100%; padding:17px; background:transparent;
-    border:1.5px solid rgba(184,58,30,.35); border-radius:16px;
-    font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600;
-    color:var(--red); letter-spacing:1.5px; text-transform:uppercase;
-    cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center;
-  }
-  .release-btn:active { background:rgba(184,58,30,.06); transform:scale(.98); }
-  .release-hint { font-size:10px; color:var(--muted2); text-align:center; letter-spacing:2px; text-transform:uppercase; margin-top:10px; font-weight:500; }
+/* ── Level grid ── */
+.level-grid-wrap {
+  flex:1; overflow-y:auto; padding:0 14px 12px;
+  -webkit-overflow-scrolling:touch;
+}
+.level-grid-wrap::-webkit-scrollbar { display:none; }
 
-  /* ─────────────────────────────── SETTINGS SCREEN ── */
-  #screenSettings { overflow:hidden; }
+.grid-row { display:flex; gap:9px; margin-bottom:9px; }
 
-  .settings-header {
-    padding:20px 24px 16px;
-    border-bottom:1px solid var(--border);
-    flex-shrink:0;
-  }
-  .settings-title-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
-  .settings-title { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:400; font-style:italic; color:var(--text); }
-  .settings-sub { font-size:11px; color:var(--muted2); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
+.level-tile {
+  flex:1; aspect-ratio:1/1; max-height:86px;
+  background:var(--card); border:1.5px solid var(--line);
+  border-radius:var(--radius-md); display:flex; align-items:center;
+  justify-content:center; cursor:pointer;
+  transition:all .16s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+  position:relative; overflow:hidden; user-select:none;
+}
+.level-tile:active { transform:scale(.91); }
+.level-tile.selected {
+  background:var(--gold); border-color:var(--gold);
+  box-shadow:0 4px 16px rgba(154,112,32,.32);
+  transform:scale(1.04);
+}
+.level-tile.selected .tile-num { color:#fff; }
+.level-tile.selected::after {
+  content:'✓'; position:absolute; top:5px; right:7px;
+  font-size:9px; font-weight:700; color:rgba(255,255,255,.7);
+  font-family:'Inter',sans-serif;
+}
+.tile-num {
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:clamp(18px, 5.5vw, 26px);
+  font-weight:700; line-height:1; color:var(--text); letter-spacing:-.2px;
+}
+.tile-spacer { flex:1; visibility:hidden; pointer-events:none; aspect-ratio:1/1; max-height:86px; }
 
-  .settings-body { flex:1; overflow-y:auto; padding:20px 24px; -webkit-overflow-scrolling:touch; }
-  .settings-body::-webkit-scrollbar { display:none; }
+/* No presets empty */
+.no-presets {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; padding:32px; gap:10px;
+}
+.no-presets-icon { font-size:36px; opacity:.35; }
+.no-presets-title {
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:18px;
+  font-weight:600; color:var(--sub);
+}
+.no-presets-sub { font-size:11px; color:var(--mute); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
+.no-presets-btn {
+  margin-top:6px; padding:12px 24px;
+  background:transparent; border:1.5px solid var(--gold-mid);
+  border-radius:var(--radius-sm);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700;
+  color:var(--gold); letter-spacing:1.5px; text-transform:uppercase; cursor:pointer;
+  transition:all .18s;
+}
+.no-presets-btn:active { background:var(--gold-lt); transform:scale(.97); }
 
-  /* Instructions */
-  .settings-info {
-    background:var(--gold-pale); border:1px solid rgba(160,120,40,.2);
-    border-radius:14px; padding:14px 16px; margin-bottom:20px;
-    font-size:12px; color:var(--muted); line-height:1.7; letter-spacing:.2px;
-  }
-  .settings-info strong { color:var(--gold); font-weight:600; }
+/* ── Park bar ── */
+.park-bar {
+  padding:12px 14px max(16px, env(safe-area-inset-bottom));
+  border-top:1px solid var(--line); background:var(--bg); flex-shrink:0;
+}
+.selected-preview {
+  text-align:center; font-size:11px; color:var(--mute);
+  letter-spacing:2px; text-transform:uppercase; font-weight:500;
+  margin-bottom:10px; min-height:15px;
+}
+.selected-preview span { color:var(--gold); font-weight:700; }
+.park-btn {
+  width:100%; padding:16px;
+  background:var(--text); border:none; border-radius:var(--radius-md);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; font-weight:700; color:#fff;
+  letter-spacing:.8px; text-transform:uppercase; cursor:pointer;
+  transition:all .18s;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  box-shadow:0 4px 16px rgba(25,23,20,.18);
+}
+.park-btn:not(:disabled):active { opacity:.82; transform:scale(.98); }
+.park-btn:disabled { background:var(--surface); color:var(--mute); box-shadow:none; cursor:not-allowed; }
+.park-btn-dot { width:5px; height:5px; border-radius:50%; background:#fff; opacity:.7; }
+.park-btn:not(:disabled) .park-btn-dot { animation:blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.6)} }
 
-  /* Tag input area */
-  .tag-field-label { font-size:9px; font-weight:600; letter-spacing:3px; color:var(--muted2); text-transform:uppercase; margin-bottom:10px; display:block; }
+/* ══════════════════════════════════════════════
+   HOME — PARKED STATE
+══════════════════════════════════════════════ */
+.parked-hero {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:28px var(--px) 0; text-align:center;
+}
 
-  .tag-field {
-    background:var(--card); border:1.5px solid var(--border);
-    border-radius:14px; padding:10px 12px; display:flex;
-    flex-wrap:wrap; gap:8px; align-items:center; cursor:text;
-    transition:border-color .2s; min-height:56px;
-  }
-  .tag-field:focus-within { border-color:var(--gold-dim); box-shadow:0 0 0 3px rgba(201,168,76,.1); }
+.level-card {
+  width:100%; background:var(--card);
+  border:1.5px solid var(--gold-mid);
+  border-radius:var(--radius-xl);
+  padding:36px 20px 28px; position:relative; overflow:hidden;
+  margin-bottom:18px;
+  animation:card-pulse 3.5s ease-in-out infinite;
+}
+@keyframes card-pulse {
+  0%,100%{box-shadow:0 4px 28px rgba(154,112,32,.08)}
+  50%    {box-shadow:0 8px 40px rgba(154,112,32,.18)}
+}
+.level-card::before {
+  content:''; position:absolute; top:0; left:20px; right:20px; height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-mid),transparent); opacity:.5;
+}
+.level-card-label {
+  font-size:9px; font-weight:700; letter-spacing:4px;
+  text-transform:uppercase; color:var(--mute); margin-bottom:14px;
+}
+.level-number {
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:clamp(68px, 20vw, 96px); font-weight:700; line-height:1;
+  color:var(--gold); letter-spacing:-3px;
+  transition:all .4s cubic-bezier(.34,1.2,.64,1);
+}
+.level-saved-time {
+  font-size:11px; font-weight:600; letter-spacing:2px; color:var(--green);
+  margin-top:14px; display:flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.level-saved-time::before {
+  content:''; width:5px; height:5px; border-radius:50%;
+  background:var(--green); flex-shrink:0;
+}
 
-  /* Each level tag */
-  .tag {
-    display:inline-flex; align-items:center; gap:6px;
-    background:var(--surface); border:1px solid var(--border2);
-    border-radius:8px; padding:6px 10px;
-    font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400;
-    color:var(--text); line-height:1; user-select:none;
-    animation:tag-pop .2s cubic-bezier(.34,1.4,.64,1);
-  }
-  @keyframes tag-pop { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
-  .tag-remove {
-    width:16px; height:16px; border-radius:50%; background:var(--border2);
-    display:flex; align-items:center; justify-content:center;
-    font-size:9px; color:var(--muted); cursor:pointer; font-style:normal;
-    transition:all .15s; flex-shrink:0; line-height:1;
-    font-family:'DM Sans',sans-serif; font-weight:700;
-  }
-  .tag-remove:active { background:var(--red); color:#fff; transform:scale(.9); }
+.parked-sub {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; font-weight:500; color:var(--mute);
+  letter-spacing:.2px; margin-bottom:22px;
+}
 
-  /* Hidden real input inside tag field */
-  .tag-input {
-    border:none; outline:none; background:transparent;
-    font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400;
-    color:var(--text); min-width:60px; flex:1;
-    text-transform:uppercase; letter-spacing:1px;
-    caret-color:var(--gold);
-  }
-  .tag-input::placeholder { color:var(--muted2); font-size:16px; letter-spacing:0; }
+.parked-actions {
+  width:100%; padding:0 var(--px) max(20px, env(safe-area-inset-bottom));
+  flex-shrink:0;
+}
+.release-btn {
+  width:100%; padding:16px;
+  background:transparent; border:1.5px solid rgba(174,51,24,.3);
+  border-radius:var(--radius-md);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; font-weight:700; color:var(--red);
+  letter-spacing:.8px; text-transform:uppercase;
+  cursor:pointer; transition:all .18s;
+  display:flex; align-items:center; justify-content:center;
+}
+.release-btn:active { background:rgba(174,51,24,.05); transform:scale(.98); }
+.release-hint {
+  font-size:10px; color:var(--mute); text-align:center;
+  letter-spacing:2px; text-transform:uppercase; margin-top:9px; font-weight:500;
+}
 
-  .tag-hint { font-size:10px; color:var(--muted2); letter-spacing:1.5px; margin-top:8px; font-weight:500; }
+/* ══════════════════════════════════════════════
+   SETTINGS SCREEN
+══════════════════════════════════════════════ */
+.settings-header {
+  padding:20px var(--px) 16px;
+  border-bottom:1px solid var(--line); flex-shrink:0;
+}
+.settings-title-row {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:3px;
+}
+.settings-title {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:22px; font-weight:700; color:var(--text); letter-spacing:-.3px;
+}
+.settings-sub { font-size:11px; color:var(--mute); letter-spacing:2px; text-transform:uppercase; font-weight:500; }
 
-  /* Order tip */
-  .order-tip {
-    margin-top:20px; padding:12px 16px;
-    background:var(--surface); border-radius:12px;
-    font-size:11px; color:var(--muted); line-height:1.7;
-  }
-  .order-tip strong { color:var(--text); font-weight:600; }
+.settings-body { flex:1; overflow-y:auto; padding:20px var(--px); -webkit-overflow-scrolling:touch; }
+.settings-body::-webkit-scrollbar { display:none; }
 
-  /* Quick add presets */
-  .quick-add-label { font-size:9px; font-weight:600; letter-spacing:3px; color:var(--muted2); text-transform:uppercase; margin:20px 0 10px; display:block; }
-  .quick-chips { display:flex; flex-wrap:wrap; gap:8px; }
-  .quick-chip {
-    padding:8px 14px; border-radius:10px; border:1px solid var(--border);
-    background:var(--card); font-family:'Cormorant Garamond',serif;
-    font-size:18px; font-weight:400; color:var(--muted); cursor:pointer;
-    transition:all .18s; letter-spacing:1px;
-  }
-  .quick-chip:active { border-color:var(--gold-dim); background:var(--gold-pale); color:var(--gold); transform:scale(.95); }
-  .quick-chip.used { opacity:.3; pointer-events:none; }
+/* Name field in settings */
+.settings-name-field { margin-bottom:24px; }
+.field-label {
+  font-size:9px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block;
+}
+.field-input {
+  width:100%; padding:14px 16px;
+  background:var(--card); border:1.5px solid var(--line2);
+  border-radius:var(--radius-md); outline:none;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:16px; font-weight:600; color:var(--text); letter-spacing:-.2px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.field-input::placeholder { color:var(--mute); font-weight:400; font-size:14px; }
+.field-input:focus { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
 
-  /* Save button */
-  .settings-footer {
-    padding:14px 24px max(20px, env(safe-area-inset-bottom));
-    border-top:1px solid var(--border); background:var(--bg); flex-shrink:0;
-  }
-  .save-btn {
-    width:100%; padding:17px; background:var(--gold); border:none; border-radius:16px;
-    font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; color:#fff;
-    letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s;
-    box-shadow:0 4px 18px rgba(160,120,40,.28);
-  }
-  .save-btn:active { opacity:.86; transform:scale(.98); }
-  .save-btn:disabled { background:var(--surface); color:var(--muted2); box-shadow:none; }
+/* Info banner */
+.settings-info {
+  background:var(--gold-lt); border:1px solid rgba(196,154,56,.25);
+  border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:20px;
+  font-size:12px; color:var(--sub); line-height:1.65;
+}
+.settings-info strong { color:var(--gold); font-weight:700; }
 
-  /* ─────────────────────────────── OVERLAYS ── */
-  .overlay {
-    position:fixed; inset:0; background:rgba(30,26,20,.45);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-    display:flex; align-items:center; justify-content:center; padding:32px;
-    opacity:0; pointer-events:none; transition:opacity .25s; z-index:200;
-  }
-  .overlay.open { opacity:1; pointer-events:all; }
-  .confirm-box {
-    background:var(--card); border-radius:28px; padding:40px 28px 32px;
-    width:100%; max-width:340px; text-align:center; border:1px solid var(--border);
-    box-shadow:0 20px 60px rgba(0,0,0,.15);
-    transform:translateY(20px) scale(.96);
-    transition:transform .3s cubic-bezier(.34,1.2,.64,1);
-  }
-  .overlay.open .confirm-box { transform:translateY(0) scale(1); }
-  .confirm-icon { font-size:48px; margin-bottom:16px; line-height:1; }
-  .confirm-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; font-style:italic; margin-bottom:8px; color:var(--text); }
-  .confirm-sub { font-size:13px; color:var(--muted); margin-bottom:28px; line-height:1.8; }
-  .confirm-btns { display:flex; gap:10px; }
-  .btn-c {
-    flex:1; padding:16px; border-radius:14px; font-family:'DM Sans',sans-serif;
-    font-size:14px; font-weight:600; cursor:pointer; transition:all .2s;
-    border:1.5px solid; letter-spacing:.5px; text-transform:uppercase;
-  }
-  .btn-c:active { transform:scale(.97); }
-  .btn-c.yes { background:var(--red); border-color:var(--red); color:#fff; box-shadow:0 4px 14px rgba(184,58,30,.25); }
-  .btn-c.no  { background:transparent; border-color:var(--border2); color:var(--muted); }
-  #overlayClose .btn-c.yes { background:var(--gold); border-color:var(--gold); box-shadow:0 4px 14px rgba(160,120,40,.25); }
+/* Tag field */
+.tag-field-label { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--mute); margin-bottom:8px; display:block; }
+.tag-field {
+  background:var(--card); border:1.5px solid var(--line2);
+  border-radius:var(--radius-md); padding:10px 12px;
+  display:flex; flex-wrap:wrap; gap:7px; align-items:center;
+  cursor:text; transition:border-color .2s; min-height:52px;
+}
+.tag-field:focus-within { border-color:var(--gold-mid); box-shadow:0 0 0 3px var(--gold-lt); }
 
-  /* ─────────────────────────────── CLOSED SCREEN ── */
-  #closedScreen {
-    position:fixed; inset:0; background:var(--bg); display:none;
-    flex-direction:column; align-items:center; justify-content:center;
-    z-index:300; text-align:center; padding:40px;
-  }
-  .closed-glyph { width:76px; height:76px; border-radius:50%; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; margin-bottom:24px; font-size:30px; background:var(--card); box-shadow:0 4px 20px rgba(0,0,0,.06); }
-  .closed-title { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:400; font-style:italic; color:var(--text); margin-bottom:10px; }
-  .closed-sub { font-size:13px; color:var(--muted); line-height:2; margin-bottom:36px; }
-  .reopen-btn { padding:16px 44px; background:var(--gold); border:none; border-radius:14px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; color:#fff; cursor:pointer; transition:all .2s; letter-spacing:1.5px; text-transform:uppercase; box-shadow:0 4px 16px rgba(160,120,40,.28); }
-  .reopen-btn:active { opacity:.85; transform:scale(.98); }
+.tag {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--surface); border:1px solid var(--line2);
+  border-radius:8px; padding:5px 9px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700;
+  color:var(--text); line-height:1; user-select:none;
+  animation:tag-in .18s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes tag-in { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
+.tag-remove {
+  width:15px; height:15px; border-radius:50%; background:var(--line2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:8px; color:var(--sub); cursor:pointer; font-weight:800;
+  transition:all .14s; flex-shrink:0; font-family:'Inter',sans-serif;
+}
+.tag-remove:active { background:var(--red); color:#fff; }
 
-  /* ─────────────────────────────── TOAST ── */
-  .toast {
-    position:fixed; bottom:24px; left:24px; right:24px; background:var(--text);
-    border-radius:14px; padding:16px 20px; font-size:12px; color:#fff;
-    text-align:center; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;
-    opacity:0; transform:translateY(20px);
-    transition:all .3s cubic-bezier(.34,1.2,.64,1); pointer-events:none; z-index:400;
-  }
-  .toast.show { opacity:1; transform:translateY(0); }
+.tag-input {
+  border:none; outline:none; background:transparent;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:600;
+  color:var(--text); min-width:60px; flex:1;
+  text-transform:uppercase; letter-spacing:.5px; caret-color:var(--gold);
+}
+.tag-input::placeholder { color:var(--mute); font-size:13px; font-weight:400; letter-spacing:0; text-transform:none; }
+.tag-hint { font-size:10px; color:var(--mute); letter-spacing:1px; margin-top:7px; font-weight:500; }
+
+.quick-add-label { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--mute); margin:18px 0 9px; display:block; }
+.quick-chips { display:flex; flex-wrap:wrap; gap:7px; }
+.quick-chip {
+  padding:7px 13px; border-radius:10px;
+  border:1px solid var(--line); background:var(--card);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700;
+  color:var(--sub); cursor:pointer; transition:all .15s;
+}
+.quick-chip:active { border-color:var(--gold-mid); background:var(--gold-lt); color:var(--gold); transform:scale(.95); }
+.quick-chip.used { opacity:.28; pointer-events:none; }
+
+.order-tip {
+  margin-top:18px; padding:11px 14px;
+  background:var(--surface); border-radius:var(--radius-sm);
+  font-size:11px; color:var(--sub); line-height:1.65;
+}
+.order-tip strong { color:var(--text); font-weight:600; }
+
+.settings-footer {
+  padding:12px var(--px) max(20px, env(safe-area-inset-bottom));
+  border-top:1px solid var(--line); background:var(--bg); flex-shrink:0;
+}
+.save-btn {
+  width:100%; padding:16px;
+  background:var(--text); border:none; border-radius:var(--radius-md);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; font-weight:700; color:#fff;
+  letter-spacing:.8px; text-transform:uppercase; cursor:pointer;
+  transition:all .18s; box-shadow:0 4px 16px rgba(25,23,20,.16);
+}
+.save-btn:active { opacity:.82; transform:scale(.98); }
+
+/* ══════════════════════════════════════════════
+   OVERLAYS
+══════════════════════════════════════════════ */
+.overlay {
+  position:fixed; inset:0;
+  background:rgba(25,23,20,.45);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:center; padding:28px;
+  opacity:0; pointer-events:none; transition:opacity .22s; z-index:200;
+}
+.overlay.open { opacity:1; pointer-events:all; }
+.confirm-box {
+  background:var(--card); border-radius:var(--radius-xl);
+  padding:36px 24px 28px; width:100%; max-width:320px;
+  text-align:center; border:1px solid var(--line);
+  box-shadow:0 20px 60px rgba(0,0,0,.14);
+  transform:translateY(20px) scale(.96);
+  transition:transform .28s cubic-bezier(.34,1.2,.64,1);
+}
+.overlay.open .confirm-box { transform:translateY(0) scale(1); }
+.confirm-icon { font-size:44px; margin-bottom:14px; line-height:1; }
+.confirm-title {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:22px; font-weight:700; letter-spacing:-.3px;
+  margin-bottom:7px; color:var(--text);
+}
+.confirm-sub { font-size:13px; color:var(--sub); margin-bottom:24px; line-height:1.75; }
+.confirm-btns { display:flex; gap:9px; }
+.btn-c {
+  flex:1; padding:15px; border-radius:var(--radius-sm);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:all .18s; border:1.5px solid;
+  letter-spacing:.5px; text-transform:uppercase;
+}
+.btn-c:active { transform:scale(.97); }
+.btn-c.yes { background:var(--red); border-color:var(--red); color:#fff; }
+.btn-c.no  { background:transparent; border-color:var(--line2); color:var(--sub); }
+#overlayClose .btn-c.yes { background:var(--text); border-color:var(--text); }
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+.toast {
+  position:fixed; bottom:24px; left:20px; right:20px;
+  background:var(--text); border-radius:var(--radius-md);
+  padding:14px 18px; font-size:11px; color:#fff;
+  text-align:center; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;
+  opacity:0; transform:translateY(16px);
+  transition:all .28s cubic-bezier(.34,1.2,.64,1); pointer-events:none; z-index:400;
+}
+.toast.show { opacity:1; transform:translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════ HEADER ═══════════════════ -->
+<!-- ══════════════════════════════════════════════
+     WELCOME SCREEN
+══════════════════════════════════════════════ -->
+<div id="screenWelcome">
+  <div class="wlc-top">
+    <div class="wlc-icon">🅿</div>
+    <div class="wlc-eyebrow">Welcome to</div>
+    <div class="wlc-heading">Park<span>Pin</span></div>
+    <div class="wlc-desc">Never forget where you parked again. Tell us your name to get started.</div>
+
+    <div class="wlc-form">
+      <label class="wlc-label" for="wlcNameInput">Your Name</label>
+      <input
+        id="wlcNameInput"
+        class="wlc-input"
+        type="text"
+        placeholder="e.g. Alex"
+        autocomplete="given-name"
+        autocorrect="off"
+        spellcheck="false"
+        maxlength="30"
+        oninput="onWelcomeInput()"
+      />
+    </div>
+  </div>
+
+  <div class="wlc-bottom">
+    <button id="wlcBtn" class="wlc-btn" onclick="completeWelcome()" disabled>
+      Get Started →
+    </button>
+    <div class="wlc-skip" onclick="skipWelcome()">Skip for now</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════ -->
+
+<!-- HEADER -->
 <div class="header">
-  <div>
-    <div class="brand-label">Parking</div>
-    <div class="brand-title">Park<em>Pin</em></div>
+  <div class="header-left">
+    <div class="header-greeting" id="headerGreeting">Parking</div>
+    <div class="header-name" id="headerName">Park<em>Pin</em></div>
   </div>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openSettings()" title="Settings" id="settingsBtn">⚙</button>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
     <button class="icon-btn close-btn" onclick="openOverlay('close')" title="Close app">✕</button>
   </div>
 </div>
 
-<!-- ═══════════════════ SCREENS ═══════════════════ -->
+<!-- SCREENS -->
 <div class="screen-wrap">
 
-  <!-- ── HOME SCREEN ── -->
+  <!-- HOME -->
   <div class="screen" id="screenHome">
 
-    <!-- STATE A: Pick level -->
+    <!-- Empty: pick level -->
     <div id="stateEmpty">
       <div class="section-label">Tap your parking level</div>
-      <div class="level-grid-wrap" id="levelGrid">
-        <!-- Rendered by JS -->
-      </div>
+      <div class="level-grid-wrap" id="levelGrid"></div>
       <div class="park-bar">
         <div class="selected-preview" id="selectedPreview">No level selected</div>
         <button id="parkBtn" class="park-btn" onclick="parkCar()" disabled>
@@ -387,7 +579,7 @@
       </div>
     </div>
 
-    <!-- STATE B: Parked -->
+    <!-- Parked -->
     <div id="stateParked">
       <div class="parked-hero">
         <div class="level-card">
@@ -395,7 +587,7 @@
           <div class="level-number" id="levelNumber">—</div>
           <div class="level-saved-time" id="savedTime"></div>
         </div>
-        <div class="parked-tagline">Safe &amp; Remembered</div>
+        <div class="parked-sub">Safe &amp; Remembered</div>
       </div>
       <div class="parked-actions">
         <button class="release-btn" onclick="openOverlay('release')">Release Spot</button>
@@ -403,41 +595,50 @@
       </div>
     </div>
 
-  </div><!-- end screenHome -->
+  </div><!-- /screenHome -->
 
-  <!-- ── SETTINGS SCREEN ── -->
+  <!-- SETTINGS -->
   <div class="screen" id="screenSettings">
 
     <div class="settings-header">
       <div class="settings-title-row">
-        <div class="settings-title">Your Levels</div>
-        <button class="icon-btn" onclick="closeSettings()" title="Back">✕</button>
+        <div class="settings-title">Settings</div>
+        <button class="icon-btn" onclick="closeSettings()">✕</button>
       </div>
-      <div class="settings-sub">Customise your carpark presets</div>
+      <div class="settings-sub">Customise your experience</div>
     </div>
 
     <div class="settings-body">
 
+      <!-- Name -->
+      <div class="settings-name-field">
+        <label class="field-label" for="settingsNameInput">Your Name</label>
+        <input
+          id="settingsNameInput"
+          class="field-input"
+          type="text"
+          placeholder="Enter your name"
+          autocomplete="given-name"
+          autocorrect="off"
+          spellcheck="false"
+          maxlength="30"
+        />
+      </div>
+
       <div class="settings-info">
-        <strong>How it works:</strong> Type a level (e.g. <strong>1A</strong>, <strong>B2</strong>, <strong>G</strong>) and press <strong>Space</strong>, <strong>Enter</strong>, or <strong>comma</strong> to add it. Tap <strong>✕</strong> on a tag to remove it.
+        <strong>How it works:</strong> Type a level (e.g. <strong>1A</strong>, <strong>B2</strong>, <strong>G</strong>) and press <strong>Space</strong> or <strong>Enter</strong> to add it. Tap <strong>✕</strong> on a tag to remove it.
       </div>
 
       <label class="tag-field-label">Parking Levels</label>
       <div class="tag-field" id="tagField" onclick="focusTagInput()">
-        <!-- Tags injected here by JS -->
         <input
-          type="text"
-          id="tagInput"
-          class="tag-input"
-          placeholder="Type a level…"
-          maxlength="6"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="characters"
-          spellcheck="false"
+          type="text" id="tagInput" class="tag-input"
+          placeholder="Type a level…" maxlength="6"
+          autocomplete="off" autocorrect="off"
+          autocapitalize="characters" spellcheck="false"
         />
       </div>
-      <div class="tag-hint">Press Space or Enter after each level to add it</div>
+      <div class="tag-hint">Press Space or Enter after each level</div>
 
       <span class="quick-add-label">Quick Add</span>
       <div class="quick-chips" id="quickChips">
@@ -459,25 +660,25 @@
       </div>
 
       <div class="order-tip">
-        <strong>Tip:</strong> Levels appear on the home screen in the order you add them. Drag to reorder isn't supported yet — remove and re-add to change the order.
+        <strong>Tip:</strong> Levels appear on the home screen in the order you add them.
       </div>
 
-    </div><!-- end settings-body -->
-
-    <div class="settings-footer">
-      <button class="save-btn" id="saveBtn" onclick="saveSettings()">Save Levels</button>
     </div>
 
-  </div><!-- end screenSettings -->
+    <div class="settings-footer">
+      <button class="save-btn" onclick="saveSettings()">Save Changes</button>
+    </div>
 
-</div><!-- end screen-wrap -->
+  </div><!-- /screenSettings -->
 
-<!-- ═══════════════════ OVERLAYS ═══════════════════ -->
+</div><!-- /screen-wrap -->
+
+<!-- OVERLAY: Close -->
 <div class="overlay" id="overlayClose">
   <div class="confirm-box">
     <div class="confirm-icon">👋</div>
     <div class="confirm-title">Close App?</div>
-    <div class="confirm-sub" id="closeSubText">Your parking spot will remain<br>saved when you return.</div>
+    <div class="confirm-sub">Your saved spot stays intact.<br>The app will close completely.</div>
     <div class="confirm-btns">
       <button class="btn-c yes" onclick="doClose()">Close</button>
       <button class="btn-c no"  onclick="closeOverlay('close')">Stay</button>
@@ -485,11 +686,12 @@
   </div>
 </div>
 
+<!-- OVERLAY: Release -->
 <div class="overlay" id="overlayRelease">
   <div class="confirm-box">
     <div class="confirm-icon">🚗</div>
     <div class="confirm-title">Release Spot?</div>
-    <div class="confirm-sub">This will clear your saved<br>parking level. Drive safe.</div>
+    <div class="confirm-sub">This will clear your saved parking level. Drive safe.</div>
     <div class="confirm-btns">
       <button class="btn-c yes" onclick="releaseSpot()">Release</button>
       <button class="btn-c no"  onclick="closeOverlay('release')">Cancel</button>
@@ -497,292 +699,296 @@
   </div>
 </div>
 
-<div id="closedScreen">
-  <div class="closed-glyph">✓</div>
-  <div class="closed-title">App Closed</div>
-  <div class="closed-sub" id="closedSubText">Press your phone's home button<br>or reopen from your home screen.</div>
-  <button class="reopen-btn" onclick="reopenApp()">Reopen</button>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-  /* ─── Storage keys ─── */
-  const LEVEL_KEY   = 'parkpin_level';
-  const TIME_KEY    = 'parkpin_time';
-  const PRESETS_KEY = 'parkpin_presets';
+/* ── Keys ── */
+const LEVEL_KEY   = 'parkpin_level';
+const TIME_KEY    = 'parkpin_time';
+const PRESETS_KEY = 'parkpin_presets';
+const NAME_KEY    = 'parkpin_name';
+const ONBOARD_KEY = 'parkpin_onboarded';
 
-  const DEFAULT_PRESETS = ['B3','B2','B1','G','1','2','3','4','5'];
+const DEFAULT_PRESETS = ['B3','B2','B1','G','1','2','3','4','5'];
 
-  let selectedLevel  = null;
-  let draftTags      = [];   // working copy in settings
+let selectedLevel = null;
+let draftTags     = [];
 
-  /* ══════════════════ INIT ══════════════════ */
-  function init() {
-    const saved = localStorage.getItem(LEVEL_KEY);
-    const time  = localStorage.getItem(TIME_KEY);
-    renderGrid();
-    if (saved) showParked(saved, time); else showEmpty();
+/* ══════════════════ BOOT ══════════════════ */
+function init() {
+  const onboarded = localStorage.getItem(ONBOARD_KEY);
+  if (!onboarded) {
+    // First launch — show welcome screen
+    document.getElementById('screenWelcome').classList.remove('hidden');
+  } else {
+    document.getElementById('screenWelcome').classList.add('hidden');
+    document.getElementById('screenWelcome').style.display = 'none';
   }
+  updateHeader();
+  renderGrid();
+  const saved = localStorage.getItem(LEVEL_KEY);
+  const time  = localStorage.getItem(TIME_KEY);
+  if (saved) showParked(saved, time); else showEmpty();
+}
 
-  /* ══════════════════ GRID ══════════════════ */
-  function getPresets() {
-    try {
-      const raw = localStorage.getItem(PRESETS_KEY);
-      const arr = raw ? JSON.parse(raw) : null;
-      return Array.isArray(arr) && arr.length ? arr : DEFAULT_PRESETS;
-    } catch(e) { return DEFAULT_PRESETS; }
+/* ══════════════════ WELCOME ══════════════════ */
+function onWelcomeInput() {
+  const val = document.getElementById('wlcNameInput').value.trim();
+  document.getElementById('wlcBtn').disabled = !val;
+}
+
+function completeWelcome() {
+  const name = document.getElementById('wlcNameInput').value.trim();
+  if (!name) return;
+  localStorage.setItem(NAME_KEY, name);
+  localStorage.setItem(ONBOARD_KEY, '1');
+  dismissWelcome();
+}
+
+function skipWelcome() {
+  localStorage.setItem(ONBOARD_KEY, '1');
+  dismissWelcome();
+}
+
+function dismissWelcome() {
+  const el = document.getElementById('screenWelcome');
+  el.classList.add('hidden');
+  updateHeader();
+  setTimeout(() => { el.style.display = 'none'; }, 420);
+}
+
+/* ══════════════════ HEADER ══════════════════ */
+function updateHeader() {
+  const name = localStorage.getItem(NAME_KEY);
+  const greeting = document.getElementById('headerGreeting');
+  const nameEl   = document.getElementById('headerName');
+  if (name) {
+    const hour = new Date().getHours();
+    const tod  = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    greeting.textContent = tod;
+    nameEl.innerHTML     = name;
+    nameEl.style.fontStyle = 'normal';
+  } else {
+    greeting.textContent = 'Parking';
+    nameEl.innerHTML     = 'Park<em>Pin</em>';
   }
+}
 
-  function renderGrid() {
-    const presets = getPresets();
-    const grid    = document.getElementById('levelGrid');
+/* ══════════════════ GRID ══════════════════ */
+function getPresets() {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    const arr = raw ? JSON.parse(raw) : null;
+    return Array.isArray(arr) && arr.length ? arr : DEFAULT_PRESETS;
+  } catch(e) { return DEFAULT_PRESETS; }
+}
 
-    if (!presets.length) {
-      grid.innerHTML = `
-        <div class="no-presets">
-          <div class="no-presets-icon">🅿</div>
-          <div class="no-presets-title">No levels set up yet</div>
-          <div class="no-presets-sub">Add your carpark levels</div>
-          <button class="no-presets-btn" onclick="openSettings()">Open Settings</button>
-        </div>`;
-      return;
-    }
-
-    const COLS = 3;
-    let html = '';
-    for (let i = 0; i < presets.length; i += COLS) {
-      const row = presets.slice(i, i + COLS);
-      html += '<div class="grid-row">';
-      row.forEach(lvl => {
-        html += `<div class="level-tile" id="tile-${CSS.escape(lvl)}" onclick="selectLevel('${lvl.replace(/'/g,"\\'")}')">
-          <div class="tile-num">${lvl}</div>
-        </div>`;
-      });
-      // fill empty slots
-      for (let s = row.length; s < COLS; s++) {
-        html += '<div class="tile-spacer"></div>';
-      }
-      html += '</div>';
-    }
-    grid.innerHTML = html;
-
-    // Restore selection highlight if still valid
-    if (selectedLevel && presets.includes(selectedLevel)) {
-      const t = document.getElementById('tile-' + CSS.escape(selectedLevel));
-      if (t) t.classList.add('selected');
-    } else {
-      selectedLevel = null;
-      document.getElementById('parkBtn').disabled = true;
-      updatePreview();
-    }
+function renderGrid() {
+  const presets = getPresets();
+  const grid    = document.getElementById('levelGrid');
+  if (!presets.length) {
+    grid.innerHTML = `<div class="no-presets">
+      <div class="no-presets-icon">🅿</div>
+      <div class="no-presets-title">No levels set up yet</div>
+      <div class="no-presets-sub">Add levels in settings</div>
+      <button class="no-presets-btn" onclick="openSettings()">Open Settings</button>
+    </div>`;
+    return;
   }
-
-  /* ══════════════════ HOME STATE ══════════════════ */
-  function showEmpty() {
-    document.getElementById('stateEmpty').style.display  = 'flex';
-    document.getElementById('stateParked').style.display = 'none';
+  const COLS = 3;
+  let html = '';
+  for (let i = 0; i < presets.length; i += COLS) {
+    const row = presets.slice(i, i + COLS);
+    html += '<div class="grid-row">';
+    row.forEach(lvl => {
+      html += `<div class="level-tile" id="tile-${CSS.escape(lvl)}" onclick="selectLevel('${lvl.replace(/'/g,"\\'")}')">
+        <div class="tile-num">${lvl}</div>
+      </div>`;
+    });
+    for (let s = row.length; s < COLS; s++) html += '<div class="tile-spacer"></div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+  if (selectedLevel && presets.includes(selectedLevel)) {
+    const t = document.getElementById('tile-' + CSS.escape(selectedLevel));
+    if (t) t.classList.add('selected');
+  } else {
     selectedLevel = null;
-    renderGrid();
-    updatePreview();
     document.getElementById('parkBtn').disabled = true;
-    document.getElementById('closeSubText').innerHTML = "Your parking spot will remain<br>saved when you return.";
-  }
-
-  function showParked(level, time) {
-    document.getElementById('stateEmpty').style.display  = 'none';
-    document.getElementById('stateParked').style.display = 'flex';
-    document.getElementById('levelNumber').textContent   = level;
-    document.getElementById('savedTime').textContent     = time ? 'Saved at ' + time : '';
-    document.getElementById('closeSubText').innerHTML    =
-      'Level <strong style="color:var(--gold)">' + level + '</strong> is saved — see you back here.';
-  }
-
-  function selectLevel(lvl) {
-    if (navigator.vibrate) navigator.vibrate(18);
-    selectedLevel = lvl;
-    document.querySelectorAll('.level-tile').forEach(t => t.classList.remove('selected'));
-    const tile = document.getElementById('tile-' + CSS.escape(lvl));
-    if (tile) tile.classList.add('selected');
-    document.getElementById('parkBtn').disabled = false;
     updatePreview();
   }
+}
 
-  function updatePreview() {
-    const el = document.getElementById('selectedPreview');
-    el.innerHTML = selectedLevel
-      ? 'Level <span>' + selectedLevel + '</span> selected'
-      : 'No level selected';
-  }
+/* ══════════════════ HOME ══════════════════ */
+function showEmpty() {
+  document.getElementById('stateEmpty').style.display  = 'flex';
+  document.getElementById('stateParked').style.display = 'none';
+  selectedLevel = null;
+  renderGrid();
+  updatePreview();
+  document.getElementById('parkBtn').disabled = true;
+}
 
-  function parkCar() {
-    if (!selectedLevel) return;
-    if (navigator.vibrate) navigator.vibrate(35);
-    const now = new Date().toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit' });
-    localStorage.setItem(LEVEL_KEY, selectedLevel);
-    localStorage.setItem(TIME_KEY, now);
-    showToast('Level ' + selectedLevel + ' saved ✓');
-    const lvl = selectedLevel;
-    setTimeout(() => showParked(lvl, now), 300);
-  }
+function showParked(level, time) {
+  document.getElementById('stateEmpty').style.display  = 'none';
+  document.getElementById('stateParked').style.display = 'flex';
+  document.getElementById('levelNumber').textContent   = level;
+  document.getElementById('savedTime').textContent     = time ? 'Saved at ' + time : '';
+}
 
-  function releaseSpot() {
-    closeOverlay('release');
-    if (navigator.vibrate) navigator.vibrate([20,40,20]);
-    localStorage.removeItem(LEVEL_KEY);
-    localStorage.removeItem(TIME_KEY);
-    showToast('Spot released — drive safe');
-    setTimeout(() => showEmpty(), 360);
-  }
+function selectLevel(lvl) {
+  if (navigator.vibrate) navigator.vibrate(18);
+  selectedLevel = lvl;
+  document.querySelectorAll('.level-tile').forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById('tile-' + CSS.escape(lvl));
+  if (tile) tile.classList.add('selected');
+  document.getElementById('parkBtn').disabled = false;
+  updatePreview();
+}
 
-  /* ══════════════════ SETTINGS ══════════════════ */
-  function openSettings() {
-    draftTags = [...getPresets()];
-    renderTagField();
-    updateQuickChips();
-    document.body.classList.add('settings-open');
-  }
+function updatePreview() {
+  const el = document.getElementById('selectedPreview');
+  el.innerHTML = selectedLevel
+    ? 'Level <span>' + selectedLevel + '</span> selected'
+    : 'No level selected';
+}
 
-  function closeSettings() {
-    document.body.classList.remove('settings-open');
-  }
+function parkCar() {
+  if (!selectedLevel) return;
+  if (navigator.vibrate) navigator.vibrate(35);
+  const now = new Date().toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit' });
+  localStorage.setItem(LEVEL_KEY, selectedLevel);
+  localStorage.setItem(TIME_KEY, now);
+  showToast('Level ' + selectedLevel + ' saved ✓');
+  const lvl = selectedLevel;
+  setTimeout(() => showParked(lvl, now), 300);
+}
 
-  /* Tag field */
-  function renderTagField() {
-    const field = document.getElementById('tagField');
-    // Remove all existing tags (keep the input)
-    field.querySelectorAll('.tag').forEach(t => t.remove());
-    // Re-insert tags before the input
-    const input = document.getElementById('tagInput');
-    draftTags.forEach(lvl => {
-      const tag = makeTagEl(lvl);
-      field.insertBefore(tag, input);
-    });
-    input.value = '';
-  }
+function releaseSpot() {
+  closeOverlay('release');
+  if (navigator.vibrate) navigator.vibrate([20,40,20]);
+  localStorage.removeItem(LEVEL_KEY);
+  localStorage.removeItem(TIME_KEY);
+  showToast('Spot released — drive safe');
+  setTimeout(() => showEmpty(), 360);
+}
 
-  function makeTagEl(lvl) {
-    const tag = document.createElement('div');
-    tag.className = 'tag';
-    tag.dataset.val = lvl;
-    tag.innerHTML = `${lvl}<span class="tag-remove" onclick="removeTag('${lvl.replace(/'/g,"\\'")}')">✕</span>`;
-    return tag;
-  }
+/* ══════════════════ SETTINGS ══════════════════ */
+function openSettings() {
+  draftTags = [...getPresets()];
+  renderTagField();
+  updateQuickChips();
+  // Pre-fill name
+  const name = localStorage.getItem(NAME_KEY) || '';
+  document.getElementById('settingsNameInput').value = name;
+  document.body.classList.add('settings-open');
+}
 
-  function removeTag(lvl) {
-    if (navigator.vibrate) navigator.vibrate(12);
-    draftTags = draftTags.filter(t => t !== lvl);
-    renderTagField();
-    updateQuickChips();
-  }
+function closeSettings() {
+  document.body.classList.remove('settings-open');
+}
 
-  function addTag(raw) {
-    const val = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-    if (!val) return;
-    if (draftTags.includes(val)) {
-      showToast(val + ' already added');
-      return;
-    }
-    if (draftTags.length >= 18) {
-      showToast('Max 18 levels');
-      return;
-    }
-    if (navigator.vibrate) navigator.vibrate(15);
-    draftTags.push(val);
-    renderTagField();
-    updateQuickChips();
-  }
+function renderTagField() {
+  const field = document.getElementById('tagField');
+  field.querySelectorAll('.tag').forEach(t => t.remove());
+  const input = document.getElementById('tagInput');
+  draftTags.forEach(lvl => field.insertBefore(makeTagEl(lvl), input));
+  input.value = '';
+}
 
-  function focusTagInput() {
-    document.getElementById('tagInput').focus();
-  }
+function makeTagEl(lvl) {
+  const tag = document.createElement('div');
+  tag.className = 'tag'; tag.dataset.val = lvl;
+  tag.innerHTML = `${lvl}<span class="tag-remove" onclick="removeTag('${lvl.replace(/'/g,"\\'")}')">✕</span>`;
+  return tag;
+}
 
-  function updateQuickChips() {
-    document.querySelectorAll('.quick-chip').forEach(chip => {
-      const val = chip.textContent.trim();
-      chip.classList.toggle('used', draftTags.includes(val));
-    });
-  }
+function removeTag(lvl) {
+  if (navigator.vibrate) navigator.vibrate(12);
+  draftTags = draftTags.filter(t => t !== lvl);
+  renderTagField(); updateQuickChips();
+}
 
-  function quickAdd(val) {
-    if (draftTags.includes(val)) return;
-    addTag(val);
-  }
+function addTag(raw) {
+  const val = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (!val) return;
+  if (draftTags.includes(val)) { showToast(val + ' already added'); return; }
+  if (draftTags.length >= 18) { showToast('Max 18 levels'); return; }
+  if (navigator.vibrate) navigator.vibrate(15);
+  draftTags.push(val);
+  renderTagField(); updateQuickChips();
+}
 
-  /* Tag input keyboard handling */
-  document.getElementById('tagInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
-      e.preventDefault();
-      const val = this.value.trim();
-      if (val) addTag(val);
-      this.value = '';
-    } else if (e.key === 'Backspace' && this.value === '' && draftTags.length) {
-      // delete last tag on backspace when input is empty
-      removeTag(draftTags[draftTags.length - 1]);
-    }
+function focusTagInput() { document.getElementById('tagInput').focus(); }
+
+function updateQuickChips() {
+  document.querySelectorAll('.quick-chip').forEach(chip => {
+    chip.classList.toggle('used', draftTags.includes(chip.textContent.trim()));
   });
+}
 
-  document.getElementById('tagInput').addEventListener('input', function() {
-    // Auto-trigger on comma or space typed
-    const val = this.value;
-    if (val.endsWith(' ') || val.endsWith(',')) {
-      const clean = val.slice(0,-1).trim();
-      if (clean) addTag(clean);
-      this.value = '';
-    }
-  });
+function quickAdd(val) { if (!draftTags.includes(val)) addTag(val); }
 
-  function saveSettings() {
-    // Flush any pending text in the input
-    const pending = document.getElementById('tagInput').value.trim();
-    if (pending) addTag(pending);
-
-    if (!draftTags.length) {
-      showToast('Add at least one level');
-      return;
-    }
-    localStorage.setItem(PRESETS_KEY, JSON.stringify(draftTags));
-    if (navigator.vibrate) navigator.vibrate([15,30,15]);
-    closeSettings();
-    renderGrid();
-    showToast('Levels saved ✓');
+document.getElementById('tagInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+    e.preventDefault();
+    if (this.value.trim()) addTag(this.value.trim());
+    this.value = '';
+  } else if (e.key === 'Backspace' && this.value === '' && draftTags.length) {
+    removeTag(draftTags[draftTags.length - 1]);
   }
+});
 
-  /* ══════════════════ CLOSE APP ══════════════════ */
-  function doClose() {
-    closeOverlay('close');
-    const saved = localStorage.getItem(LEVEL_KEY);
-    document.getElementById('closedSubText').innerHTML = saved
-      ? 'Level <strong style="color:var(--gold)">' + saved + '</strong> remains saved.<br>Reopen from your home screen anytime.'
-      : "Press your phone's home button<br>or reopen from your home screen.";
-    document.getElementById('closedScreen').style.display = 'flex';
-    setTimeout(() => {
-      try {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-          window.Capacitor.Plugins.App.exitApp();
-        } else if (navigator.app && navigator.app.exitApp) {
-          navigator.app.exitApp();
-        } else { window.close(); }
-      } catch(e) { window.close(); }
-    }, 300);
+document.getElementById('tagInput').addEventListener('input', function() {
+  if (this.value.endsWith(' ') || this.value.endsWith(',')) {
+    const clean = this.value.slice(0,-1).trim();
+    if (clean) addTag(clean);
+    this.value = '';
   }
+});
 
-  function reopenApp() {
-    document.getElementById('closedScreen').style.display = 'none';
-  }
+function saveSettings() {
+  const pending = document.getElementById('tagInput').value.trim();
+  if (pending) addTag(pending);
 
-  /* ══════════════════ UTILS ══════════════════ */
-  function openOverlay(n)  { document.getElementById('overlay' + n[0].toUpperCase() + n.slice(1)).classList.add('open'); }
-  function closeOverlay(n) { document.getElementById('overlay' + n[0].toUpperCase() + n.slice(1)).classList.remove('open'); }
+  // Save name
+  const name = document.getElementById('settingsNameInput').value.trim();
+  if (name) localStorage.setItem(NAME_KEY, name);
+  else localStorage.removeItem(NAME_KEY);
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
+  if (!draftTags.length) { showToast('Add at least one level'); return; }
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(draftTags));
+  if (navigator.vibrate) navigator.vibrate([15,30,15]);
+  updateHeader();
+  closeSettings();
+  renderGrid();
+  showToast('Settings saved ✓');
+}
 
-  init();
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+/* ══════════════════ CLOSE APP ══════════════════ */
+function doClose() {
+  closeOverlay('close');
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.exitApp();
+    } else if (navigator.app && navigator.app.exitApp) {
+      navigator.app.exitApp();
+    } else { window.close(); }
+  } catch(e) { window.close(); }
+}
+
+/* ══════════════════ UTILS ══════════════════ */
+function openOverlay(n)  { document.getElementById('overlay'+n[0].toUpperCase()+n.slice(1)).classList.add('open'); }
+function closeOverlay(n) { document.getElementById('overlay'+n[0].toUpperCase()+n.slice(1)).classList.remove('open'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
